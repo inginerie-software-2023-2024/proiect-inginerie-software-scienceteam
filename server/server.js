@@ -23,6 +23,9 @@ app.get('', (req, res) => {
         message: "Welcome to the API"
     });
 });
+
+app.use('/api/users', require('./routes/userRoutes'));
+
 //PORT
 const PORT = process.env.PORT || 8080;
 
