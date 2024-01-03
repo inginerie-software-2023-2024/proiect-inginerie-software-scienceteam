@@ -1,0 +1,1 @@
+ G:\\Facultate\\Facultate\ an\ III\ semestrul\ I\\Inginerie\ Software\\Proiect\\aplicatie1\\proiect_main\\.dart_tool\\flutter_build\\1e295cba09318d999a663b0b67e70557\\native_assets.yaml: 
