@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { User, validateUser } = require('../models/userModel');  
 
 const saveUser = async (req, res) => {
@@ -6,6 +8,14 @@ const saveUser = async (req, res) => {
         if(validate.error){
             throw new Error(validate.error.message);
         }
+
+        const existingUser = await User.findOne({ username: req.body.username });
+        if (existingUser) {
+            throw new Error("Username already exists");
+        }
+
+        validate.password = await bcrypt.hash(req.body.password, 10);
+
         const newUser = new User(req.body);
         await newUser.save();
 
@@ -33,6 +43,9 @@ const updateUser = async (req, res) => {
             throw new Error(validate.error.message);
         }
 
+        if (userDataToUpdate.password) {
+            userDataToUpdate.password = await bcrypt.hash(userDataToUpdate.password, 10);
+        }
         const user = await User.findByIdAndUpdate(userId, userDataToUpdate);
 
         if(!user){
@@ -72,4 +85,30 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = {saveUser, updateUser, deleteUser};
+const findUserByUsername = async (username) => {
+    try {
+      const user = await User.findOne({ username });
+      return user;
+    } catch (err) {
+      throw new Error("Error finding user by username");
+    }
+  };
+  
+const loginUser = async (username, password) => {
+    try {
+        const user = await findUserByUsername(username);
+
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        console.log('Invalid credentials for username:', username);
+        throw new Error('Invalid credentials');
+      }
+  
+      const accessToken = jwt.sign({ username: user.username, id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  
+      return { success: true, accessToken };
+    } catch (err) {
+      throw new Error(err.message || "Error during login");
+    }
+};
+
+module.exports = {saveUser, updateUser, deleteUser, loginUser};
