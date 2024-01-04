@@ -5,6 +5,7 @@ const { User, validateUser } = require('../models/userModel');
 const saveUser = async (req, res) => {
     try{
         const validate = await validateUser(req.body);
+        
         if(validate.error){
             throw new Error(validate.error.message);
         }
@@ -13,8 +14,8 @@ const saveUser = async (req, res) => {
         if (existingUser) {
             throw new Error("Username already exists");
         }
-
-        validate.password = await bcrypt.hash(req.body.password, 10);
+        
+        req.body.password = await bcrypt.hash(req.body.password, 10);
 
         const newUser = new User(req.body);
         await newUser.save();
@@ -97,9 +98,12 @@ const findUserByUsername = async (username) => {
 const loginUser = async (username, password) => {
     try {
         const user = await findUserByUsername(username);
-
+        //const passwordMatch = await bcrypt.compare(password, user.password);
       if (!user || !(await bcrypt.compare(password, user.password))) {
-        console.log('Invalid credentials for username:', username);
+        //console.log('Password:', passwordMatch);
+        //console.log('Stored password:', user.password);
+        //console.log('Entered password:', password);
+        //console.log('Invalid credentials for username:', username);
         throw new Error('Invalid credentials');
       }
   
