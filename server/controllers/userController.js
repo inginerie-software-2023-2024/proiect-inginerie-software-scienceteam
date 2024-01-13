@@ -37,7 +37,7 @@ const saveUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-    const userId = req.params.id;
+    const userId = req.user.id;
     const userDataToUpdate = req.body;
 
     try{
@@ -70,7 +70,7 @@ const updateUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-    const userId = req.params.id;
+    const userId = req.user.id;
     try {
         const user = await User.findByIdAndDelete(userId);  
         if(!user){
