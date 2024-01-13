@@ -20,13 +20,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         min: 3,
-        max: 30
+        max: 255
     },
     repeat_password:{
         type: String,
         required: true,
         min: 3,
-        max: 30
+        max: 255
     }
 });
 

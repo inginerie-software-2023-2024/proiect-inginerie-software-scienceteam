@@ -1,13 +1,13 @@
 const express = require('express');
 const dotenv = require('dotenv');   
-const connectDB = require("./config/db");
-
+const connectDB = require("./config/db"); 
+const authenticateToken = require('./middleware/authenticate');
 
 //DOTENV
 dotenv.config();
 
 //MONGODB CONNECTION
-connectDB();
+connectDB(); 
 
 //REST OBJECT
 const app = express();
@@ -25,6 +25,7 @@ app.get('', (req, res) => {
 });
 
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/history', authenticateToken, require('./routes/historyRoutes'));
 
 //PORT
 const PORT = process.env.PORT || 8080;
