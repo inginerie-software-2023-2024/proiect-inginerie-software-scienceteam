@@ -1,328 +1,357 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
-  runApp(const MyApp());
-}
-
-
-var selectedIndex = 0;
-
-void _setIndex(int index) {
-  selectedIndex = index;
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aplicatie',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Bug Finder'),
+      home: HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-
-
-  void _setHome() {
-    setState(() {
-      selectedIndex = 0;
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-    });
-  }
-  
-  
-
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    
-    Widget page;
-    switch (selectedIndex) {
-      case 0:
-        page = MenuPage();
-        break;
-      case 1:
-        page = AccountPage();
-        break;
-      case 2:
-        page = HistoryPage();
-        break;
-      case 3:
-        page = DashboardPage();
-        break;
-      case 4:
-        page = PhotoPage();
-        break;
-      case 5:
-        page = Placeholder();
-        break;
-      default:
-        throw UnimplementedError('no widget for $selectedIndex');
-    }
-
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-        
+        title: Text('Bug Finder'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          
-
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[                                             //Liber
-          
-
-          Expanded(                                                       //Asta este partea care randeaza pagina, doar asta ar trebui sa apara
-            child: Container(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: page,  // ← Here.
-            ),
-          ),
-
-          ],
-          
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _setHome,                 // Aici vreau sa fac un buton care duce la meniu mereu
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-
-
-// Butoane Urmatoarele 4 widgeturi sunt pentru meniu
-
-class ButonAccount extends StatelessWidget {
-  const ButonAccount({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    //var appState = context.watch<MyAppState>();
-    return ElevatedButton(          //Aici trebuie sa rezolv cu functia
-      // onPressed: () => appState.setPageIndex(1),
-      onPressed: () {
-        print('Account');
-      },    
-      child: const Text('Account'),
-    );
-  }
-}
-
-class ButonHistory extends StatelessWidget {
-  const ButonHistory({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        print('History');
-      },
-      child: const Text('History'),
-    );
-  }
-}
-
-class ButonDashboard extends StatelessWidget {
-  const ButonDashboard({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        print('Dashboard');
-      },
-      child: const Text('Dashboard'),
-    );
-  }
-}
-
-class ButonPhoto extends StatelessWidget {
-  const ButonPhoto({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        print('Take Photo');
-      },
-      child: const Text('Take Photo'),
-    );
-  }
-}
-
-
-// Pagini Urmatoarele 5 widgeturi sunt pentru pagini  
-
-
-class MenuPage extends StatefulWidget {
-  const MenuPage({super.key});
-
-  @override
-  State<MenuPage> createState() => _MenuPageState();
-}
-
-class _MenuPageState extends State<MenuPage> {
-  var selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    //var appState = context.watch<MyAppState>();
-
-    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            
-            // Expanded(
-            //   child: Container(
-            //     color: Theme.of(context).colorScheme.primaryContainer,
-            //   ),
-            // ),
-            SizedBox(height: 16),
-            ButonAccount(),
-
-            SizedBox(height: 16),
-            ButonDashboard(),
-
-            SizedBox(height: 16),
-            ButonHistory(),
-
-            SizedBox(height: 16),
-            ButonPhoto(),
+            MenuItemButton('Take Photo', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TakePhotoPage()),
+              );
+            }),
+            const SizedBox(height: 16),
+            MenuItemButton('Dashboard', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DashboardPage()),
+              );
+            }),
+            const SizedBox(height: 16),
+            MenuItemButton('History', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HistoryPage()),
+              );
+            }),
+            const SizedBox(height: 16),
+            MenuItemButton('Account', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AccountPage()),
+              );
+            }),
+            const SizedBox(height: 16),
+            MenuItemButton('Login', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            }),
+            const SizedBox(height: 16),
+            MenuItemButton('Signup', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SignupPage()),
+              );
+            }),
           ],
+        ),
       ),
-    ),
     );
-    
   }
 }
 
-class AccountPage extends StatelessWidget {
-  const AccountPage({super.key});
+class MenuItemButton extends StatelessWidget {
+  final String text;
+  final Function onTap;
+
+  const MenuItemButton(this.text, this.onTap);
 
   @override
   Widget build(BuildContext context) {
-    //var appState = context.watch<MyAppState>();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account'),
-      ),
+    return ElevatedButton(
+      onPressed: onTap as void Function()?,
+      child: Text(text),
     );
-    
   }
 }
 
-class HistoryPage extends StatelessWidget {
-  const HistoryPage({super.key});
+class TakePhotoPage extends StatefulWidget {
+  @override
+  _TakePhotoPageState createState() => _TakePhotoPageState();
+}
+
+class _TakePhotoPageState extends State<TakePhotoPage> {
+  File? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      setState(() {
+        _selectedImage = File(pickedImage.path);
+      });
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedImage != null) {
+      setState(() {
+        _selectedImage = File(pickedImage.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    //var appState = context.watch<MyAppState>();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('History'),
+        title: const Text('Take Photo Page'),
+      ),
+      body: Align(
+        alignment: const Alignment(0.9, 0.9), // Aliniere în partea dreaptă jos pentru primul buton
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end, // Ajustează alinierea pentru a fi în partea dreaptă
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                // Acțiune pentru primul buton (în cazul de față, navigare înapoi)
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.all(16),
+                shape: CircleBorder(),
+                backgroundColor: Colors.blue,
+              ),
+              child: const Icon(Icons.home, color: Color.fromARGB(255, 255, 255, 255)),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Align(
+        //alignment: const Alignment(0, 0.9), // Aliniere în mijloc jos pentru al doilea buton
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton(
+              onPressed: _pickImage,
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.all(16),
+                shape: CircleBorder(),
+                backgroundColor: Colors.green, // Culoarea pentru al doilea buton
+              ),
+              child: const Icon(Icons.photo, color: Color.fromARGB(255, 255, 255, 255)), // Iconița pentru al doilea buton
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _takePhoto,
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.all(16),
+                shape: CircleBorder(),
+                backgroundColor: Colors.orange, // Culoarea pentru butonul de a lua fotografii
+              ),
+              child: const Icon(Icons.camera, color: Color.fromARGB(255, 255, 255, 255)), // Iconița pentru butonul de a lua fotografii
+            ),
+          ],
+        ),
       ),
     );
-    
   }
 }
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dashboard Page'),
+      ),
+      body: Align(
+        alignment: const Alignment(0.9, 0.9),
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(16),
+            shape: CircleBorder(),
+            backgroundColor: Colors.blue,
+          ),
+          child: const Icon(Icons.home, color: Color.fromARGB(255, 255, 255, 255),),
+        ),
+      ),
+    );
+  }
+}
+
+class HistoryPage extends StatelessWidget {
+  final List<String> items = [
+    'Item 1',
+    'Item 2',
+    'Item 3',
+    'Item 4',
+    'Item 5',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    //var appState = context.watch<MyAppState>();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Text('History Page'),
+      ),
+      body: ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(items[index]),
+          );
+        },
       ),
     );
-    
   }
 }
 
-class PhotoPage extends StatelessWidget {
-  const PhotoPage({super.key});
+class AccountPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Account Page'),
+      ),
+      body: Align(
+        alignment: const Alignment(0.9, 0.9),
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(16),
+            shape: CircleBorder(),
+            backgroundColor: Colors.blue,
+          ),
+          child: const Icon(Icons.home, color: Color.fromARGB(255, 255, 255, 255),),
+        ),
+      ),
+    );
+  }
+}
+
+
+// Login page
+
+
+class LoginPage extends StatelessWidget {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    //var appState = context.watch<MyAppState>();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Photo'),
+        title: Text('Login Page'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: usernameController,
+              decoration: InputDecoration(labelText: 'Username'),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Password'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Adaugă logica de autentificare aici
+                String username = usernameController.text;
+                String password = passwordController.text;
+                print('Username: $username, Password: $password');
+              },
+              child: Text('Login'),
+            ),
+          ],
+        ),
       ),
     );
-    
   }
 }
 
-class MyAppState extends ChangeNotifier {
+class SignupPage extends StatelessWidget {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
-  var pageIndex = 0;
-
-  void setPageIndex(int index) {
-    pageIndex = index;
-    notifyListeners();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Signup Page'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: usernameController,
+              decoration: InputDecoration(labelText: 'Username'),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Password'),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(labelText: 'Email'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Adaugă logica de înregistrare aici
+                String username = usernameController.text;
+                String password = passwordController.text;
+                String email = emailController.text;
+                print('Username: $username, Password: $password, Email: $email');
+              },
+              child: Text('Signup'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
-
-
 }
+
+
+
 
 
 
