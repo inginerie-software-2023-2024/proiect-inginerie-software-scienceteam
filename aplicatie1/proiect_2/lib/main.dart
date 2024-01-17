@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:realm/realm.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       theme: theme,
-      home: TakePhotoPage(),
+      home: FirstPage(),
     );
   }
 }
@@ -37,6 +38,40 @@ class HomePage extends StatelessWidget {
       ),
       body: const Center(
         child: Text('Home Page'),
+      ),
+    );
+  }
+}
+
+class FirstPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          // La apăsarea pe ecran, navighează către a doua pagină
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TakePhotoPage()),
+          );
+        },
+        child: Container(
+          // Acest container ocupă tot spațiul ecranului și are o imagine de fundal
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bug_bg.jpg'), // Schimbați cu calea către imaginea dvs.
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              'BUG FINDER',
+              style: TextStyle(color: Colors.green, fontSize: 30.0),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -92,9 +127,6 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Take Photo Page'),
-      ),
       body: Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
