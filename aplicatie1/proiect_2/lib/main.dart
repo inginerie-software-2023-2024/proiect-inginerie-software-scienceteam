@@ -2,27 +2,62 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:realm/realm.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
+}
+
+class AuthService {
+  Future<bool> login(String username, String password) async {
+    // Implementează logica de validare a utilizatorului aici
+    // Exemplu simplificat: Dacă username și password sunt egale cu "admin", returnează true.
+    if (username == "admin" && password == "admin") {
+      await saveAuthenticationState(true);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> saveAuthenticationState(bool isAuthenticated) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isAuthenticated', isAuthenticated);
+  }
+
+  Future<bool> isAuthenticated() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isAuthenticated') ?? false;
+  }
+
+  Future<void> logout() async {
+    await saveAuthenticationState(false);
+  }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AuthService authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeData(
-      primaryColor: Colors.green,
-      hintColor: Colors.white,
-      fontFamily: 'Roboto',
-      // Add more theme properties as needed
-    );
-
     return MaterialApp(
-      theme: theme,
-      home: FirstPage(),
+      theme: ThemeData(
+        primaryColor: Colors.green,
+        hintColor: Colors.white,
+        fontFamily: 'Roboto',
+        // Add more theme properties as needed
+      ),
+      home: FutureBuilder<bool>(
+        future: authService.isAuthenticated(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else {
+            bool isAuthenticated = snapshot.data ?? false;
+            return isAuthenticated ? FirstPage() : LoginPage();
+          }
+        },
+      ),
     );
   }
 }
@@ -100,6 +135,7 @@ class TakePhotoPage extends StatefulWidget {
 }
 
 class _TakePhotoPageState extends State<TakePhotoPage> {
+  final AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
   File? _selectedImage;
 
   Future<void> _pickImage() async {
@@ -126,176 +162,214 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/bug_bg.jpg'),  
-          fit: BoxFit.cover,
-        ),
-      ),
-       child: Stack(
-      children: [
-        Align(
-          alignment: Alignment.topLeft, // Aliniere în stânga sus pentru primul buton
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AccountPage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                shape: const CircleBorder(),
-                backgroundColor: Colors.white, // Culoarea pentru primul buton
-              ),
-              child: const Icon(Icons.account_box_rounded, color: Colors.grey), // Iconița pentru primul buton
-            ),
-          ),
-        ),
-      Align(
-          alignment: Alignment.bottomCenter, // Aliniere în mijloc jos pentru al doilea buton
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ElevatedButton(
-                onPressed: _takePhoto,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                  shape: const CircleBorder(),
-                  backgroundColor: Colors.green, // Culoarea pentru al doilea buton
+    return FutureBuilder<bool>(
+      future: authService.isAuthenticated(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else {
+          bool isAuthenticated = snapshot.data ?? false;
+
+          if (isAuthenticated) {
+            // Dacă utilizatorul este autentificat, afișează conținutul paginii TakePhotoPage
+            return Scaffold(
+              body: Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/bug_bg.jpg'),  
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                child: const Icon(Icons.camera, color: Colors.white), // Iconița pentru al doilea buton
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => AccountPage()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(16),
+                            shape: const CircleBorder(),
+                            backgroundColor: Colors.white,
+                          ),
+                          child: const Icon(Icons.account_box_rounded, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _takePhoto,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.all(16),
+                              shape: const CircleBorder(),
+                              backgroundColor: Colors.green,
+                            ),
+                            child: const Icon(Icons.camera, color: Colors.white),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const DashboardPage()),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.all(16),
+                                  shape: const CircleBorder(),
+                                  backgroundColor: Colors.blue,
+                                ),
+                                child: const Icon(Icons.dashboard_outlined, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: _pickImage,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.all(16),
+                                shape: const CircleBorder(),
+                                backgroundColor: Colors.green,
+                              ),
+                              child: const Icon(Icons.photo, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => HistoryPage()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(16),
+                            shape: const CircleBorder(),
+                            backgroundColor: Colors.blue,
+                          ),
+                          child: const Icon(Icons.history, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-      Align(
-          alignment: Alignment.bottomRight, // Aliniere în dreapta jos pentru butonul de galerie
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: (){ Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DashboardPage()),
-                );
-                },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                shape: const CircleBorder(),
-                backgroundColor: Colors.blue, // Culoarea pentru butonul de galerie
-              ),
-              child: const Icon(Icons.dashboard_outlined, color: Colors.white), // Iconița pentru butonul de galerie
-            ),
-          ),
-        ),
-      ],
-    )
-    ),
-    Align(
-      alignment: Alignment.bottomCenter, // Aliniere în mijloc jos pentru al doilea buton
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0), // Adăugare padding doar în partea de jos
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
-              onPressed: _pickImage,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                shape: const CircleBorder(),
-                backgroundColor: Colors.green, // Culoarea pentru al doilea buton
-              ),
-              child: const Icon(Icons.photo, color: Colors.white), // Iconița pentru al doilea buton
-            ),
-          ],
-        ),
-      ),
-    ),
-    SizedBox(height: 16), // Adăugare bottom padding
-     Align(
-          alignment: Alignment.bottomLeft, // Aliniere în dreapta jos pentru butonul de galerie
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: (){ Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HistoryPage()),
-                );
-                },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                shape: const CircleBorder(),
-                backgroundColor: Colors.blue, // Culoarea pentru butonul de galerie
-              ),
-              child: const Icon(Icons.history, color: Colors.white), // Iconița pentru butonul de galerie
-            ),
-          ),
-        ),
-    ],
-    )
-    )
-    );
-}
-}
-
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bug Finder'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            MenuItemButton('Take Photo', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TakePhotoPage()),
-              );
-            }),
-            const SizedBox(height: 16),
-            MenuItemButton('Dashboard', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DashboardPage()),
-              );
-            }),
-            const SizedBox(height: 16),
-            MenuItemButton('History', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HistoryPage()),
-              );
-            }),
-            const SizedBox(height: 16),
-            MenuItemButton('Account', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AccountPage()),
-              );
-            }),
-            const SizedBox(height: 16),
-            MenuItemButton('Login', () {
+            );
+          } else {
+            // Dacă utilizatorul nu este autentificat, redirecționează-l către pagina de login
+            return Scaffold(
+              body: Center(
+                child: MenuItemButton('Login', () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => LoginPage()),
               );
             }),
-            const SizedBox(height: 16),
-            MenuItemButton('Signup', () {
+              ),
+            );
+          }
+        }
+      },
+    );
+  }
+}
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({Key? key});
+
+  @override
+  Widget build(BuildContext context) {
+    AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
+
+    return FutureBuilder<bool>(
+      future: authService.isAuthenticated(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else {
+          bool isAuthenticated = snapshot.data ?? false;
+
+          if (isAuthenticated) {
+            // Dacă utilizatorul este autentificat, afișează conținutul paginii DashboardPage
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Bug Finder'),
+              ),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    MenuItemButton('Take Photo', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const TakePhotoPage()),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                    MenuItemButton('Dashboard', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DashboardPage()),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                    MenuItemButton('History', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HistoryPage()),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                    MenuItemButton('Account', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AccountPage()),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          } else {
+            // Dacă utilizatorul nu este autentificat, redirecționează-l către pagina de login
+            return MenuItemButton('Login', () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SignupPage()),
+                MaterialPageRoute(builder: (context) => LoginPage()),
               );
-            }),
-          ],
-        ),
-      ),
+            });
+          }
+        }
+      },
     );
   }
 }
@@ -309,52 +383,126 @@ class HistoryPage extends StatelessWidget {
     'Item 5',
   ];
 
-  HistoryPage({super.key});
+  HistoryPage({Key? key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('History Page'),
-      ),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(items[index]),
-          );
-        },
-      ),
+    AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
+
+    return FutureBuilder<bool>(
+      future: authService.isAuthenticated(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else {
+          bool isAuthenticated = snapshot.data ?? false;
+
+          if (isAuthenticated) {
+            // Dacă utilizatorul este autentificat, afișează conținutul paginii HistoryPage
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('History Page'),
+              ),
+              body: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(items[index]),
+                  );
+                },
+              ),
+            );
+          } else {
+            
+            // Dacă utilizatorul nu este autentificat, redirecționează-l către pagina de login
+            return Scaffold(
+              body: Center(
+                child:  MenuItemButton('Login', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            }),
+              ),
+                
+              
+            );
+          }
+        }
+      },
     );
   }
 }
 
 class AccountPage extends StatelessWidget {
-  const AccountPage({super.key});
+  final AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
+
+  AccountPage({Key? key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account Page'),
-      ),
-      body: Align(
-        alignment: const Alignment(0.9, 0.9),
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.all(16),
-            shape: const CircleBorder(),
-            backgroundColor: Colors.blue,
-          ),
-          child: const Icon(Icons.home, color: Color.fromARGB(255, 255, 255, 255),),
-        ),
-      ),
+    return FutureBuilder<bool>(
+      future: authService.isAuthenticated(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else {
+          bool isAuthenticated = snapshot.data ?? false;
+
+          if (isAuthenticated) {
+            // Dacă utilizatorul este autentificat, afișează conținutul paginii AccountPage
+            return Scaffold(
+              backgroundColor: Color.fromARGB(0, 255, 0, 70),
+              appBar: AppBar(
+                title: const Text('Account Page'),
+              ),
+              body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Alte elemente ale paginii AccountPage pot fi adăugate aici
+
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Logout
+                      await authService.logout();
+
+                      // Navigare la LoginPage și eliminarea tuturor paginilor anterioare din stiva de navigare
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
+                      backgroundColor: Colors.red, // Culoarea butonului de logout
+                    ),
+                    child: const Text("Logout", style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            // Dacă utilizatorul nu este autentificat, redirecționează-l către pagina de login
+            return Scaffold(
+              body: Center(
+                child: MenuItemButton('Login', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            }),
+              ),
+            );
+          }
+        }
+      },
     );
   }
 }
+
 
 
 // Login page
@@ -363,15 +511,13 @@ class AccountPage extends StatelessWidget {
 class LoginPage extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final AuthService authService = AuthService();
 
   LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login Page'),
-      ),
       body: Container(
         color: Colors.green, // Set the background color here
         child: Padding(
@@ -432,11 +578,35 @@ class LoginPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   // Adaugă logica de autentificare aici
                   String username = usernameController.text;
                   String password = passwordController.text;
-                  print('Username: $username, Password: $password');
+                  bool isLoggedIn = await authService.login(username, password);
+                  if (isLoggedIn) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => TakePhotoPage()),
+            );
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('Invalid username or password!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
                 },
                 child: const Text('Sign In'),
               ),
