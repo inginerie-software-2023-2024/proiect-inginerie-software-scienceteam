@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:aplicatie/mongo_db.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MongoDatabase.connect();
   runApp(MyApp());
 }
 
@@ -54,7 +57,7 @@ class MyApp extends StatelessWidget {
             return CircularProgressIndicator();
           } else {
             bool isAuthenticated = snapshot.data ?? false;
-            return isAuthenticated ? FirstPage() : LoginPage();
+            return isAuthenticated ? FirstPage() : FirstPage();
           }
         },
       ),
@@ -79,16 +82,28 @@ class HomePage extends StatelessWidget {
 }
 
 class FirstPage extends StatelessWidget {
+  final AuthService authService = AuthService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onTap: () {
+        onTap: () async {
           // La apăsarea pe ecran, navighează către a doua pagină
+          Future<bool> isLoggedIn = authService.isAuthenticated();
+          if(await isLoggedIn){
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => TakePhotoPage()),
           );
+          }
+          else
+          {
+            Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+          }
+          
         },
         child: Container(
           // Acest container ocupă tot spațiul ecranului și are o imagine de fundal
@@ -437,6 +452,8 @@ class HistoryPage extends StatelessWidget {
 class AccountPage extends StatelessWidget {
   final AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
 
+  // Aici adaugam schimbarea parolei
+
   AccountPage({Key? key});
 
   @override
@@ -761,16 +778,25 @@ class SignupPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   // Logica de validare a parolei
                   String username = usernameController.text;
                   String password = passwordController.text;
                   String confirmPassword = confirmPasswordController.text;
                   String email = emailController.text;
 
-                  if (password == confirmPassword) {
+                  if (password == confirmPassword && password.isNotEmpty && confirmPassword.isNotEmpty && username.isNotEmpty && email.isNotEmpty) {
                     // Parolele coincid
-                    print('Username: $username, Password: $password, Email: $email');
+                    
+                    MongoDatabase db = MongoDatabase();
+                    
+                    await db.insertUser(username, email, password, "users");
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+
                   } else {
                     // Parolele nu coincid
                     showDialog(
