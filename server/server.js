@@ -26,6 +26,7 @@ app.get('', (req, res) => {
 
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/history', authenticateToken, require('./routes/historyRoutes'));
+app.use('/api/users/logged', authenticateToken, require('./routes/loggedUserRoutes'));
 
 //PORT
 const PORT = process.env.PORT || 8080;
