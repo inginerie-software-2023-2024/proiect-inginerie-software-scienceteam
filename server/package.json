@@ -26,6 +26,7 @@
     "nodemailer": "^6.9.8",
     "onnxjs": "^0.1.8",
     "onnxruntime-node": "^1.16.3",
+    "pngjs": "^7.0.0",
     "sharp": "^0.33.2",
     "torch-js": "npm:@arition/torch-js@^0.14.0"
   },
