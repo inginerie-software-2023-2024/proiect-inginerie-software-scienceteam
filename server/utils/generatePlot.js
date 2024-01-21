@@ -47,7 +47,7 @@ const insecticideData = async () => {
         });
 
         const sortedInsecticideCount = Object.entries(insecticideCount).sort((a, b) => b[1] - a[1]);
-        const top10Insecticides = sortedInsecticideCount.slice(0, 25);
+        const top25Insecticides = sortedInsecticideCount.slice(0, 25);
 
         return top25Insecticides.map(([insecticide, count]) => ({
             insecticide: insecticide,
@@ -68,7 +68,7 @@ const generateInsectPlot = async (insectData, fileName) => {
     const data = {
         labels: insectData.map(data => data.plant),
         datasets: [{
-            label: 'Plante afectate (%)',
+            label: 'Affected plants (%)',
             data: insectData.map(data => data.count * 100 / 102),
             backgroundColor: 'rgba(0, 123, 255, 0.5)',
             borderColor: 'rgba(0, 123, 255, 1)',
@@ -105,7 +105,7 @@ const generateInsecticidePlot = async (insecticideData, fileName) => {
         const data = {
             labels: insecticideData.map(data => data.insecticide),
             datasets: [{
-                label: 'Distribuția de insecticide (%)',
+                label: 'Insecticides distribution (%)',
                 data: insecticideData.map(data => data.count * 100 / 102),
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 borderColor: 'rgba(255, 99, 132, 1)',
