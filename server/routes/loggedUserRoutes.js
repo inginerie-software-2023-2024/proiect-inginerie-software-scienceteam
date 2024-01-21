@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const multer = require('multer');
 const userController = require('../controllers/userController');
 const photoProcessingController = require('../controllers/photoProcessingController');
 const storage = require('../utils/multerConfig');
