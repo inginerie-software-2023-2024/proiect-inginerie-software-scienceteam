@@ -70,6 +70,19 @@ class MongoDatabase{
     return result != null;
   }
 
+  Future<void> updatePassword(String username, String newPassword, String collectionName) async {
+      var db = await Db.create(mongo_url);
+      await db.open();
+      var collection = db.collection(collectionName);
+
+      await collection.updateMany(
+        where.eq("username", username),
+        modify.set("password", newPassword),
+      );
+
+      await db.close();
+    }
+
 
 }
 

@@ -4,6 +4,9 @@ import 'package:aplicatie/mongo_db.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'dart:convert';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,14 +14,28 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
+String? loggedInUsername;
+
 class AuthService {
   Future<bool> login(String username, String password) async {
-    // Implementează logica de validare a utilizatorului aici
-    // Exemplu simplificat: Dacă username și password sunt egale cu "admin", returnează true.
-    if (username == "admin" && password == "admin") {
-      await saveAuthenticationState(true);
-      return true;
-    } else {
+    // The URL of the /login endpoint
+    var url = Uri.parse('http://localhost:8080/api/users/login');
+
+    // The body of the POST request
+    var body = jsonEncode({
+      'username': username,
+      'password': password,
+    });
+
+    try {
+      var success = await MongoDatabase().checkUser(username, password, 'users');
+      if (success) {
+        loggedInUsername = username;
+        await saveAuthenticationState(true);
+      }
+      return success;
+    } catch (e) {
+      print(e);
       return false;
     }
   }
@@ -36,6 +53,9 @@ class AuthService {
   Future<void> logout() async {
     await saveAuthenticationState(false);
   }
+
+  
+
 }
 
 class MyApp extends StatelessWidget {
@@ -115,14 +135,18 @@ class FirstPage extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          child: Center(
-            child: Text(
-              'BUG FINDER',
-              style: TextStyle(color: Colors.green, fontSize: 30.0),
+          child: Padding(
+            padding: EdgeInsets.only(top: 40.0),
+            child: Align(
+              alignment: Alignment.topCenter,
+                child: Text(
+                'BUG SCAN',
+                style: TextStyle(color: Colors.green, fontSize: 30.0),
+            ),
             ),
           ),
-        ),
       ),
+    ),
     );
   }
 }
@@ -324,7 +348,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
-
+    var bugCounter = 0;
     return FutureBuilder<bool>(
       future: authService.isAuthenticated(),
       builder: (context, snapshot) {
@@ -370,6 +394,10 @@ class DashboardPage extends StatelessWidget {
                         MaterialPageRoute(builder: (context) => AccountPage()),
                       );
                     }),
+                    Text(
+                      'Bugs Found: $bugCounter', // Display the bug counter
+                      style: TextStyle(fontSize: 24),
+                        ),
                   ],
                 ),
               ),
@@ -389,7 +417,14 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-class HistoryPage extends StatelessWidget {
+class HistoryPage extends StatefulWidget {
+  HistoryPage({Key? key}) : super(key: key);
+
+  @override
+  _HistoryPageState createState() => _HistoryPageState();
+}
+
+class _HistoryPageState extends State<HistoryPage> {
   final List<String> items = [
     'Item 1',
     'Item 2',
@@ -398,7 +433,27 @@ class HistoryPage extends StatelessWidget {
     'Item 5',
   ];
 
-  HistoryPage({Key? key});
+  List<String> filteredItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    filteredItems = items;
+  }
+
+  void filterItems(String searchText) {
+    setState(() {
+      filteredItems = items
+          .where((item) => item.toLowerCase().contains(searchText.toLowerCase()))
+          .toList();
+    });
+  }
+
+   void resetFilter() {
+    setState(() {
+      filteredItems = items;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -418,29 +473,49 @@ class HistoryPage extends StatelessWidget {
               appBar: AppBar(
                 title: const Text('History Page'),
               ),
-              body: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(items[index]),
-                  );
-                },
+              backgroundColor: Color.fromARGB(255, 0, 255, 0),
+              body: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      onSubmitted: (value) => filterItems(value),
+                      decoration: InputDecoration(
+                        labelText: 'Search',
+                        border: OutlineInputBorder(),
+                        filled: true, // Set filled to true
+                        fillColor: Colors.white, // Set fillColor to white
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(filteredItems[index]),
+                        );
+                      },
+                    ),
+                  ),
+                  ElevatedButton(
+                  onPressed: resetFilter,
+                  child: Text('Reset Filter'),
+          ),
+                ],
               ),
             );
           } else {
-            
             // Dacă utilizatorul nu este autentificat, redirecționează-l către pagina de login
             return Scaffold(
               body: Center(
-                child:  MenuItemButton('Login', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
-            }),
+                child: MenuItemButton('Login', () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                }),
               ),
-                
-              
             );
           }
         }
@@ -451,6 +526,8 @@ class HistoryPage extends StatelessWidget {
 
 class AccountPage extends StatelessWidget {
   final AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
+
+  // Aici adaugam schimbarea parolei
 
   AccountPage({Key? key});
 
@@ -467,36 +544,55 @@ class AccountPage extends StatelessWidget {
           if (isAuthenticated) {
             // Dacă utilizatorul este autentificat, afișează conținutul paginii AccountPage
             return Scaffold(
-              backgroundColor: Color.fromARGB(0, 255, 0, 70),
               appBar: AppBar(
-                title: const Text('Account Page'),
+                title: Text('Account Page -> ' + loggedInUsername!),
               ),
-              body: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Alte elemente ale paginii AccountPage pot fi adăugate aici
-
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Logout
-                      await authService.logout();
-
-                      // Navigare la LoginPage și eliminarea tuturor paginilor anterioare din stiva de navigare
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      backgroundColor: Colors.red, // Culoarea butonului de logout
+              backgroundColor: Color.fromARGB(255, 0, 255, 0),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                        );
+                      },
+                      child: Text('Change Password'),
                     ),
-                    child: const Text("Logout", style: TextStyle(color: Colors.white)),
-                  ),
-                ],
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => DeleteAccountPage()),
+                        );
+                      },
+                      child: Text('Delete Account'),
+                    ),
+                    // Alte elemente ale paginii AccountPage pot fi adăugate aici
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Logout
+                        await authService.logout();
+
+                        // Navigare la LoginPage și eliminarea tuturor paginilor anterioare din stiva de navigare
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(16),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        backgroundColor: Colors.red, // Culoarea butonului de logout
+                      ),
+                      child: const Text("Logout", style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
               ),
             );
           } else {
@@ -504,11 +600,11 @@ class AccountPage extends StatelessWidget {
             return Scaffold(
               body: Center(
                 child: MenuItemButton('Login', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
-            }),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                }),
               ),
             );
           }
@@ -593,6 +689,7 @@ class LoginPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                 ),
+                
                 onPressed: () async {
                   // Adaugă logica de autentificare aici
                   String username = usernameController.text;
@@ -601,8 +698,7 @@ class LoginPage extends StatelessWidget {
                   if (isLoggedIn) {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => TakePhotoPage()),
-            );
+                      MaterialPageRoute(builder: (context) => TakePhotoPage()),);
                   } else {
                     showDialog(
                       context: context,
@@ -642,6 +738,18 @@ class LoginPage extends StatelessWidget {
                 },
                 child: const Text("Sign up"),
               ),
+                const SizedBox(height: 16),
+                Text("Forgot your password?", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RecoveryPasswordPage()),
+                  );
+                },
+                child: const Text("Recover your password"),
+              ),
+              
             ],
           ),
         ),
@@ -662,9 +770,6 @@ class SignupPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
-      appBar: AppBar(
-        title: const Text('SIGN UP'),
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -786,14 +891,24 @@ class SignupPage extends StatelessWidget {
                   if (password == confirmPassword && password.isNotEmpty && confirmPassword.isNotEmpty && username.isNotEmpty && email.isNotEmpty) {
                     // Parolele coincid
                     
-                    MongoDatabase db = MongoDatabase();
-                    
-                    await db.insertUser(username, email, password, "users");
+                    var url = Uri.parse('http://localhost:8080/api/users/save');
 
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
+                    var body = jsonEncode({
+                      'username': username,
+                      'email': email,
+                      'password': password,
+                      'confirmPassword': confirmPassword,
+                    });
+                    
+                    var response = await http.post(url, body: body, headers: {"Content-Type": "application/json"});
+
+                    if (response.statusCode == 200) {
+                      var responseBody = jsonDecode(response.body);
+                      if (responseBody['success']) {
+                        print('Signup successful');
+                      } else {
+                        print('Signup failed: ${responseBody['message']}');
+                      }
 
                   } else {
                     // Parolele nu coincid
@@ -815,6 +930,7 @@ class SignupPage extends StatelessWidget {
                       },
                     );
                   }
+                }
                 },
                 child: const Text('Sign Up'),
               ),
@@ -833,7 +949,163 @@ class SignupPage extends StatelessWidget {
                   );
                 },
                 child: const Text("Sign in"),
-              )
+              ),
+              
+              
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class RecoveryPasswordPage extends StatelessWidget {
+  final TextEditingController emailController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+                title: const Text('Password Recovery Page'),
+              ),
+      backgroundColor: Colors.green,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextField(
+                onTap: () {
+                  // Handle tap outside the container
+                  FocusScope.of(context).unfocus(); // Hide the keyboard
+                },
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email Address',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                onPressed: () async {
+                  String email = emailController.text;
+
+                  if (email.isNotEmpty) {
+                    var url = Uri.parse('http://localhost:8080/api/users/recover');
+
+                    var body = jsonEncode({
+                      'email': email,
+                    });
+
+                    var response = await http.post(url, body: body, headers: {"Content-Type": "application/json"});
+
+                    if (response.statusCode == 200) {
+                      var responseBody = jsonDecode(response.body);
+                      if (responseBody['success']) {
+                        print('Recovery email sent successfully');
+                      } else {
+                        print('Failed to send recovery email: ${responseBody['message']}');
+                      }
+                    } else {
+                      print('Failed to send recovery email');
+                    }
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text('Please enter your email address'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+                child: const Text('Send Recovery Email'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class ChangePasswordPage extends StatelessWidget {
+  final TextEditingController currentPasswordController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Change Password Page'),
+      ),
+      backgroundColor: Colors.green,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextField(
+                obscureText: true,
+                controller: currentPasswordController,
+                decoration: InputDecoration(
+                  labelText: 'Current Password',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                obscureText: true,
+                controller: newPasswordController,
+                decoration: InputDecoration(
+                  labelText: 'New Password',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                onPressed: () {
+                  String currentPassword = currentPasswordController.text;
+                  String newPassword = newPasswordController.text;
+
+                  // TODO: Implement password change logic
+
+                  // Clear the text fields
+                  currentPasswordController.clear();
+                  newPasswordController.clear();
+                },
+                child: const Text('Change Password'),
+              ),
             ],
           ),
         ),
@@ -844,8 +1116,56 @@ class SignupPage extends StatelessWidget {
 
 
 
+class DeleteAccountPage extends StatelessWidget {
+  final TextEditingController currentPasswordController = TextEditingController();
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Change Password Page'),
+      ),
+      backgroundColor: Colors.green,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextField(
+                obscureText: true,
+                controller: currentPasswordController,
+                decoration: InputDecoration(
+                  labelText: 'Current Password',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                onPressed: () {
+                  String currentPassword = currentPasswordController.text;
 
+                  // TODO: Implement password change logic
+
+                  // Clear the text fields
+                  currentPasswordController.clear();
+                },
+                child: const Text('Delete account'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 
 
