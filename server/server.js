@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');   
 const connectDB = require("./config/db"); 
 const authenticateToken = require('./middleware/authenticate');
+const fs = require('fs');
 
 //DOTENV
 dotenv.config();
@@ -26,6 +27,7 @@ app.get('', (req, res) => {
 
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/history', authenticateToken, require('./routes/historyRoutes'));
+app.use('/api/dashboard',require('./routes/dashboardRoutes'));
 app.use('/api/users/logged', authenticateToken, require('./routes/loggedUserRoutes'));
 
 //PORT
