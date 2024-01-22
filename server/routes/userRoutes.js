@@ -17,6 +17,8 @@ router.post('/login', async (req, res) => {
     }
   });
 
+router.post('/requestResetPassword', userController.requestPasswordReset);
 
+router.post('/resetPassword', userController.resetPassword);
 
 module.exports = router;
