@@ -18,9 +18,6 @@ router.put('/update', userController.updateUser);
 
 router.delete('/delete', userController.deleteUser);   
 
-router.post('/requestResetPassword', userController.requestPasswordReset);
-
-router.post('/resetPassword', userController.resetPassword);
 
 router.post('/uploadPhoto', upload.single('photo'), photoProcessingController.classifyImage);
 
