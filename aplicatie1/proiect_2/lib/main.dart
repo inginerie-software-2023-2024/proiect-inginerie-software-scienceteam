@@ -1,16 +1,21 @@
+//import 'dart:html';
 import 'dart:io';
 
-import 'package:aplicatie/mongo_db.dart';
+// import 'package:aplicatie/mongo_db.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:uni_links/uni_links.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MongoDatabase.connect();
+  // await MongoDatabase.connect();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  loggedInUsername = prefs.getString('username');
   runApp(MyApp());
 }
 
@@ -19,7 +24,7 @@ String? loggedInUsername;
 class AuthService {
   Future<bool> login(String username, String password) async {
     // The URL of the /login endpoint
-    var url = Uri.parse('http://localhost:8080/api/users/login');
+    var url = Uri.parse('http://10.0.2.2:8080/api/users/login');
 
     // The body of the POST request
     var body = jsonEncode({
@@ -28,16 +33,51 @@ class AuthService {
     });
 
     try {
-      var success = await MongoDatabase().checkUser(username, password, 'users');
-      if (success) {
+      // var success = await MongoDatabase().checkUser(username, password, 'users');
+
+    var response = await http.post(url, body: body, headers: {'Content-Type': 'application/json'});
+      
+      if (response.statusCode == 200) {
+
+        // Parse the response body
+        var responseBody = jsonDecode(response.body);
+
+        // Extract the access token
+        var accessToken = responseBody['accessToken'];
+        var userid = responseBody['userId'];
+
+        // Store the access token
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessToken', accessToken);
+
         loggedInUsername = username;
+        await saveUsername(username);
         await saveAuthenticationState(true);
+        
+        print("Token:   ");
+        print(accessToken);
+        print("");
+        print("Userid:   ");
+        print(userid);
+
+        return response.statusCode == 200;
       }
-      return success;
+      else
+    return response.statusCode == 200;
     } catch (e) {
       print(e);
       return false;
     }
+  }
+
+  Future<void> saveUsername(String username) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+  }
+
+  Future<String?> loadUsername() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
   }
 
   Future<void> saveAuthenticationState(bool isAuthenticated) async {
@@ -103,6 +143,9 @@ class HomePage extends StatelessWidget {
 
 class FirstPage extends StatelessWidget {
   final AuthService authService = AuthService();
+
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -185,8 +228,31 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
       setState(() {
         _selectedImage = File(pickedImage.path);
       });
+
+      await _uploadPhoto(_selectedImage!);
     }
   }
+
+  void addHistory(Map<String, dynamic> historyData, String accessToken) async {
+  final url = Uri.parse('http://10.0.2.2:8080/api/history/addHistory');
+
+  final response = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    },
+    body: jsonEncode(historyData),
+  );
+
+  if (response.statusCode == 200) {
+    print('History added successfully');
+    Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+    // Now you can use jsonResponse in your application
+  } else {
+    print('Failed to add history. Status code: ${response.statusCode}');
+  }
+}
 
   Future<void> _takePhoto() async {
     final picker = ImagePicker();
@@ -196,8 +262,59 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
       setState(() {
         _selectedImage = File(pickedImage.path);
       });
+
+      await _uploadPhoto(_selectedImage!);
     }
   }
+
+  Future<void> _uploadPhoto(File image) async {
+  final url = Uri.parse('http://10.0.2.2:8080/api/users/logged/uploadPhoto');
+
+  // Load the access token from shared preferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var accessToken = prefs.getString('accessToken');
+
+  // Create a multipart request
+  var request = http.MultipartRequest('POST', url);
+
+  // Add the access token to the Authorization header
+  request.headers['Authorization'] = 'Bearer $accessToken';
+  print("Hello1");
+  // Add the image to the request
+  print('Before adding file');
+  request.files.add(await http.MultipartFile.fromPath('photo', image.path));
+  print('After adding file');
+  print("_selectedImage: $_selectedImage.path");
+  // Send the request
+  var response = await request.send();
+  print("Hello2");
+  if (response.statusCode == 200) {
+    print('Photo uploaded successfully');
+    var finalResponse = await http.Response.fromStream(response);
+    var decodedData = jsonDecode(finalResponse.body);
+    Map<String, dynamic> data = decodedData['data'];
+    print(data["_id"]);
+    String bugId = data["_id"];
+
+
+    // final url1 = Uri.parse('http://10.0.2.2:8080/api/history/addHistory');
+    
+    // Map<String, String> headers = {
+    // 'Content-Type': 'application/json; charset=UTF-8',
+    // 'Authorization': 'Bearer $accessToken',};
+
+    addHistory({'insect':bugId}, accessToken!);
+
+    // now we redirect to bugPage
+    Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => BugPage(data)),
+          );
+    
+  } else {
+    print('Failed to upload photo. Status code: ${response.statusCode}');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -386,6 +503,27 @@ class DashboardPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(builder: (context) => HistoryPage()),
                       );
+                      ElevatedButton(
+                      onPressed: () async {
+                        // Logout
+                        await authService.logout();
+
+                        // Navigare la LoginPage și eliminarea tuturor paginilor anterioare din stiva de navigare
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(16),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        backgroundColor: Colors.red, // Culoarea butonului de logout
+                      ),
+                      child: const Text("Logout", style: TextStyle(color: Colors.white)),
+                    )
+                    ;
                     }),
                     const SizedBox(height: 16),
                     MenuItemButton('Account', () {
@@ -425,20 +563,56 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  final List<String> items = [
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-    'Item 5',
+  List<Map<String, dynamic>> items1 = [];
+  List<String> items = ["1"
   ];
+
+  Future<void> fetchHistory() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? accessToken = prefs.getString('accessToken');
+
+    if (accessToken != null) {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/api/history/getHistory'), // replace with your server URL
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        List<dynamic> historyData = decodedData['data'];
+        
+        // Extract insect name from each history item
+        for (var item in historyData) {
+          Map<String, dynamic> insectData = item['insect'];
+          items1.add(insectData);
+          print(insectData);
+          String insectName = insectData["name"];
+          print(insectName);
+          // Do something with insectName
+        }
+
+        setState(() {
+          items = historyData.map((item) => item['insect']['name'].toString()).toList();
+          print("Test items list");
+          
+          print(items1);
+        });
+      } else {
+        // handle error
+      }
+    }
+  }
+
+  
 
   List<String> filteredItems = [];
 
   @override
   void initState() {
     super.initState();
-    filteredItems = items;
+    fetchHistory().then((_) => resetFilter());
   }
 
   void filterItems(String searchText) {
@@ -494,6 +668,18 @@ class _HistoryPageState extends State<HistoryPage> {
                       itemBuilder: (context, index) {
                         return ListTile(
                           title: Text(filteredItems[index]),
+                          onTap: (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                var item = items1.firstWhere((i) => i['name'] == filteredItems[index]);
+                                // print(items1[index]["name"]);
+                                // print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                                // print(filteredItems[index]);
+                                return BugPage(item);
+                              }),
+                            );
+                          }
                         );
                       },
                     ),
@@ -523,7 +709,8 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 }
-
+var loggedInUsername1 = "Ion";
+              
 class AccountPage extends StatelessWidget {
   final AuthService authService = AuthService(); // Creează o instanță a serviciului de autentificare
 
@@ -577,9 +764,9 @@ class AccountPage extends StatelessWidget {
                         await authService.logout();
 
                         // Navigare la LoginPage și eliminarea tuturor paginilor anterioare din stiva de navigare
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => LoginPage()), 
+                          (Route<dynamic> route) => false,
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -736,7 +923,7 @@ class LoginPage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => SignupPage()),
                   );
                 },
-                child: const Text("Sign up"),
+                child: const Text("Sign Up"),
               ),
                 const SizedBox(height: 16),
                 Text("Forgot your password?", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
@@ -891,25 +1078,36 @@ class SignupPage extends StatelessWidget {
                   if (password == confirmPassword && password.isNotEmpty && confirmPassword.isNotEmpty && username.isNotEmpty && email.isNotEmpty) {
                     // Parolele coincid
                     
-                    var url = Uri.parse('http://localhost:8080/api/users/save');
+                    var url = Uri.parse('http://10.0.2.2:8080/api/users/save');
 
                     var body = jsonEncode({
                       'username': username,
                       'email': email,
                       'password': password,
-                      'confirmPassword': confirmPassword,
+                      'repeat_password': confirmPassword,
                     });
+                    print("salut");
+                    var response = await http.post(url, body: body, headers: {'Content-Type': 'application/json'});
+                    // print("salut1");
+                    // print(response.statusCode);
                     
-                    var response = await http.post(url, body: body, headers: {"Content-Type": "application/json"});
-
                     if (response.statusCode == 200) {
                       var responseBody = jsonDecode(response.body);
                       if (responseBody['success']) {
                         print('Signup successful');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                        
                       } else {
-                        print('Signup failed: ${responseBody['message']}');
                       }
 
+                  } else
+                  {
+                      var responseBody = jsonDecode(response.body);
+                        print('Signup failed: ${responseBody['message']}');
+                  }
                   } else {
                     // Parolele nu coincid
                     showDialog(
@@ -930,7 +1128,6 @@ class SignupPage extends StatelessWidget {
                       },
                     );
                   }
-                }
                 },
                 child: const Text('Sign Up'),
               ),
@@ -962,6 +1159,27 @@ class SignupPage extends StatelessWidget {
 
 class RecoveryPasswordPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
+
+  void requestPasswordReset(String email) async {
+  final url = Uri.parse('http://10.0.2.2:8080/api/users/requestResetPassword');
+
+  final response = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode({"email":email}),
+  );
+  
+
+  if (response.statusCode == 200) {
+    print('Password reset link sent successfully');
+    Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+    // Now you can use jsonResponse in your application
+  } else {
+    print('Failed to send password reset link. Status code: ${response.statusCode}');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -1000,24 +1218,33 @@ class RecoveryPasswordPage extends StatelessWidget {
                   String email = emailController.text;
 
                   if (email.isNotEmpty) {
-                    var url = Uri.parse('http://localhost:8080/api/users/recover');
+                    
+                    requestPasswordReset(email);
 
-                    var body = jsonEncode({
-                      'email': email,
-                    });
+                    //redirect to login
+                  
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Check your email'),
+          content: const Text('We have sent a password reset link to your email address.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
 
-                    var response = await http.post(url, body: body, headers: {"Content-Type": "application/json"});
-
-                    if (response.statusCode == 200) {
-                      var responseBody = jsonDecode(response.body);
-                      if (responseBody['success']) {
-                        print('Recovery email sent successfully');
-                      } else {
-                        print('Failed to send recovery email: ${responseBody['message']}');
-                      }
-                    } else {
-                      print('Failed to send recovery email');
-                    }
                   } else {
                     showDialog(
                       context: context,
@@ -1050,8 +1277,33 @@ class RecoveryPasswordPage extends StatelessWidget {
 
 
 class ChangePasswordPage extends StatelessWidget {
-  final TextEditingController currentPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
+  final TextEditingController newPasswordController_r = TextEditingController();
+  final TextEditingController newUsernameController = TextEditingController();
+  final TextEditingController newEmailController = TextEditingController();
+  
+
+  void updateUser(Map<String, dynamic> userDataToUpdate, String accessToken) async {
+    final url = Uri.parse('http://10.0.2.2:8080/api/users/logged/update');
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(userDataToUpdate),
+    );
+
+    if (response.statusCode == 200) {
+      print('User updated successfully');
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      // Now you can use jsonResponse in your application
+    } else {
+      print('Failed to update user. Status code: ${response.statusCode}');
+
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1060,24 +1312,42 @@ class ChangePasswordPage extends StatelessWidget {
         title: const Text('Change Password Page'),
       ),
       backgroundColor: Colors.green,
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextField(
-                obscureText: true,
-                controller: currentPasswordController,
+              const SizedBox(height: 32),
+              TextFormField(
+                obscureText: false,
+                controller: newUsernameController,
                 decoration: InputDecoration(
-                  labelText: 'Current Password',
+                  labelText: 'New Username',
                   border: OutlineInputBorder(),
                   filled: true,
                   fillColor: Colors.white,
                 ),
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
               ),
-              const SizedBox(height: 16),
-              TextField(
+              const SizedBox(height: 32),
+              TextFormField(
+                obscureText: false,
+                controller: newEmailController,
+                decoration: InputDecoration(
+                  labelText: 'New Email',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+              ),
+              const SizedBox(height: 32),
+              TextFormField(
                 obscureText: true,
                 controller: newPasswordController,
                 decoration: InputDecoration(
@@ -1086,23 +1356,53 @@ class ChangePasswordPage extends StatelessWidget {
                   filled: true,
                   fillColor: Colors.white,
                 ),
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
+              TextFormField(
+                obscureText: true,
+                controller: newPasswordController_r,
+                decoration: InputDecoration(
+                  labelText: 'Repeat New Password',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+              ),
+              const SizedBox(height: 64),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                 ),
-                onPressed: () {
-                  String currentPassword = currentPasswordController.text;
-                  String newPassword = newPasswordController.text;
+                onPressed: () async {
+
+                  Map<String, dynamic> userDataToUpdate = {
+                    'username': newUsernameController.text,
+                    'password': newPasswordController.text,
+                    'repeat_password': newPasswordController_r.text,
+                    'email': newEmailController.text,
+                  };
+
+                  //accessToken
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  String? accessToken = prefs.getString('accessToken');
+
+                  updateUser(userDataToUpdate, accessToken!);
 
                   // TODO: Implement password change logic
 
                   // Clear the text fields
-                  currentPasswordController.clear();
                   newPasswordController.clear();
+                  newPasswordController_r.clear();
+                  newUsernameController.clear();
+                  newEmailController.clear();
                 },
                 child: const Text('Change Password'),
               ),
@@ -1114,16 +1414,37 @@ class ChangePasswordPage extends StatelessWidget {
   }
 }
 
-
-
+// Trebuie delete nu post
 class DeleteAccountPage extends StatelessWidget {
   final TextEditingController currentPasswordController = TextEditingController();
+  final AuthService authService = AuthService();
+  Future<void> deleteUser() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? accessToken = prefs.getString('accessToken');
+
+  if (accessToken != null) {
+    final response = await http.delete(
+      Uri.parse('http://10.0.2.2:8080/api/users/logged/delete'), // replace with your server URL
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('User deleted successfully');
+      // Handle successful deletion
+    } else {
+      print('Failed to delete user');
+      // Handle error
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Change Password Page'),
+        title: const Text('Delete Account Page'),
       ),
       backgroundColor: Colors.green,
       body: Center(
@@ -1132,16 +1453,6 @@ class DeleteAccountPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextField(
-                obscureText: true,
-                controller: currentPasswordController,
-                decoration: InputDecoration(
-                  labelText: 'Current Password',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -1149,13 +1460,23 @@ class DeleteAccountPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                 ),
-                onPressed: () {
-                  String currentPassword = currentPasswordController.text;
+                onPressed: () async {
+                  // String currentPassword = currentPasswordController.text;
+                  
+                  
+                  deleteUser();
 
-                  // TODO: Implement password change logic
+                  // Logout
+                  await authService.logout();
+
+                        // Navigare la LoginPage și eliminarea tuturor paginilor anterioare din stiva de navigare
+                  Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => LoginPage()), 
+                  (Route<dynamic> route) => false,
+                  );
 
                   // Clear the text fields
-                  currentPasswordController.clear();
+                  // currentPasswordController.clear();
                 },
                 child: const Text('Delete account'),
               ),
@@ -1168,4 +1489,119 @@ class DeleteAccountPage extends StatelessWidget {
 }
 
 
+// Page named bugPage that will be used to display the bug details
+class BugPage extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const BugPage(this.data, {Key? key}) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    var name = data["name"];
+    var description = data["description"];
+    var plants = data["plants"];
+    var insecticide = data["insecticide"];
+    var prevention = data["prevention_methods"];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Bug Details')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text('Bug Name: $name'),
+            ),
+            SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text('Bug Description: $description'),
+            ),
+            SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text('Plants affected: $plants'),
+            ),
+            SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text('Insecticide: $insecticide'),
+            ),
+            SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text('Prevention: $prevention'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Go Back'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Page for resetting the password
+class ResetPasswordPage extends StatelessWidget {
+  final String authenticationToken;
+  final String userId;
+
+  const ResetPasswordPage({
+    required this.authenticationToken,
+    required this.userId,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Reset Password')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Reset Password Page'),
+            const SizedBox(height: 20),
+            Text('Authentication Token: $authenticationToken'),
+            Text('User ID: $userId'),
+            const SizedBox(height: 20),
+            // Textfield new password
+            
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Implement password reset logic
+              },
+              child: const Text('Reset Password'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
