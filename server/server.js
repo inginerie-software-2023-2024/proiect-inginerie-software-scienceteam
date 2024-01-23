@@ -27,7 +27,7 @@ app.get('', (req, res) => {
 
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/history', authenticateToken, require('./routes/historyRoutes'));
-app.use('/api/dashboard',require('./routes/dashboardRoutes'));
+app.use('/api/dashboard', authenticateToken, require('./routes/dashboardRoutes'));
 app.use('/api/users/logged', authenticateToken, require('./routes/loggedUserRoutes'));
 
 //PORT
