@@ -137,12 +137,12 @@ const requestPasswordReset = async (req, res) => {
             createdAt: Date.now(),
         }).save();
 
-        const link = `${ process.env.CLIENT_URL }/passwordReset?token=${resetToken}&id=${user._id}`;
-        sendEmail(user.email,"Password Reset Request",{name: user.name,link: link,},"./template/requestResetPassword.handlebars");
+        const cod = `token=${resetToken}&id=${user._id}`;
+        sendEmail(user.email,"Password Reset Request",{name: user.name,cod: cod,},"./template/requestResetPassword.handlebars");
         res.status(200).json({
             success: true,
             message: "Reset password link sent successfully, please check your email",
-            link : link
+            cod : cod
         });
     }
     catch(err){
