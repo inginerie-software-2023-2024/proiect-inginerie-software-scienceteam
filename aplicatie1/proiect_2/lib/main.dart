@@ -57,11 +57,11 @@ class AuthService {
         await saveUsername(username);
         await saveAuthenticationState(true);
         
-        print("Token:   ");
-        print(accessToken);
-        print("");
-        print("Userid:   ");
-        print(userid);
+        // print("Token:   ");
+        // print(accessToken);
+        // print("");
+        // print("Userid:   ");
+        // print(userid);
 
         return response.statusCode == 200;
       }
@@ -408,7 +408,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                             shape: const CircleBorder(),
                             // backgroundColor: Colors.white,
                           ),
-                          child: const Icon(Icons.account_circle_outlined, color: Color.fromARGB(255, 255, 255, 255), size: 80,),
+                          child: const Icon(Icons.account_circle_outlined, color: Color.fromARGB(255, 255, 255, 255), size: 50,),
                         ),
                       ),
                     ),
@@ -442,7 +442,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                                   shape: const CircleBorder(),
                                   // backgroundColor: Colors.blue,
                                 ),
-                                child: const Icon(Icons.dashboard_outlined, color: Colors.white, size: 80,),
+                                child: const Icon(Icons.dashboard_outlined, color: Colors.white, size: 50,),
                               ),
                             ),
                           ),
@@ -463,7 +463,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                                 shape: const CircleBorder(),
                                 // backgroundColor: Colors.green,
                               ),
-                              child: const Icon(Icons.photo, color: Colors.white, size: 80,),
+                              child: const Icon(Icons.photo, color: Colors.white, size: 50,),
                             ),
                           ],
                         ),
@@ -486,7 +486,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                             shape: const CircleBorder(),
                             // backgroundColor: Colors.blue,
                           ),
-                          child: const Icon(Icons.history, color: Colors.white, size: 80,),
+                          child: const Icon(Icons.history, color: Colors.white, size: 50,),
                         ),
                       ),
                     ),
@@ -792,13 +792,28 @@ class AccountPage extends StatelessWidget {
             // Dacă utilizatorul este autentificat, afișează conținutul paginii AccountPage
             return Scaffold(
               appBar: AppBar(
-                title: Text('Account Page -> ' + loggedInUsername!),
+                // title: Text('Account Page -> ' + loggedInUsername!),
+                title: Text('Account Page'),
               ),
               backgroundColor: Color.fromARGB(255, 107, 144, 127),
               body: Center(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    SizedBox(height: 16),
+                    Container(
+                      padding: EdgeInsets.all(8.0), // Add some padding
+                      decoration: BoxDecoration(
+                        color: Colors.white, // Set the color of the box
+                        border: Border.all(color: Colors.grey), // Add a border
+                        borderRadius: BorderRadius.circular(10.0), // Add some round corners
+                      ),
+                      child: Text(
+                        "$loggedInUsername", 
+                        style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 23)
+                      ),
+                    ),
+                    SizedBox(height: 256),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.push(
