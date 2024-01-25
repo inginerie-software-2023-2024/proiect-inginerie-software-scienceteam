@@ -3,6 +3,7 @@ import 'dart:io';
 
 // import 'package:aplicatie/mongo_db.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +19,8 @@ Future<void> main() async {
   loggedInUsername = prefs.getString('username');
   runApp(MyApp());
 }
+
+
 
 String? loggedInUsername;
 
@@ -54,11 +57,11 @@ class AuthService {
         await saveUsername(username);
         await saveAuthenticationState(true);
         
-        print("Token:   ");
-        print(accessToken);
-        print("");
-        print("Userid:   ");
-        print(userid);
+        // print("Token:   ");
+        // print(accessToken);
+        // print("");
+        // print("Userid:   ");
+        // print(userid);
 
         return response.statusCode == 200;
       }
@@ -66,6 +69,7 @@ class AuthService {
     return response.statusCode == 200;
     } catch (e) {
       print(e);
+      print("Error in login");
       return false;
     }
   }
@@ -98,14 +102,64 @@ class AuthService {
 
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final AuthService authService = AuthService();
+  @override
+  void initState() {
+    super.initState();
+    initUniLinks();
+  }
+
+  void initUniLinks() async {
+    // Get the initial link
+    String? initialLink;
+    try {
+      initialLink = await getInitialLink();
+    } on PlatformException {
+      // Handle error
+    }
+
+    // Handle the initial link
+    handleLink(initialLink);
+
+    // Listen for links while the app is running
+    getLinksStream().listen((String? link) {
+      handleLink(link);
+    }, onError: (err) {
+      // Handle error
+    });
+  }
+
+  void handleLink(String? link) {
+  if (link != null) {
+    Uri uri = Uri.parse(link);
+    if (uri.path == '/passwordReset') {
+      final token = uri.queryParameters['token'];
+      final id = uri.queryParameters['id'];
+      if (token != null && id != null) {
+        // Navigate to the ResetPasswordPage with the token and id
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PasswordRecoveryPage(
+            ),
+          ),
+        );
+      }
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.green,
+        primaryColor: Color.fromARGB(255, 107, 144, 127),
         hintColor: Colors.white,
         fontFamily: 'Roboto',
         // Add more theme properties as needed
@@ -174,7 +228,7 @@ class FirstPage extends StatelessWidget {
           height: double.infinity,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/images/bug_bg.jpg'), // Schimbați cu calea către imaginea dvs.
+              image: AssetImage('assets/images/bug_bg2.jpg'), // Schimbați cu calea către imaginea dvs.
               fit: BoxFit.cover,
             ),
           ),
@@ -332,7 +386,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
               body: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/images/bug_bg.jpg'),  
+                    image: AssetImage('assets/images/bug_bg3.jpg'),  
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -341,8 +395,8 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                     Align(
                       alignment: Alignment.topLeft,
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: ElevatedButton(
+                        padding: const EdgeInsets.only(top: 32.0, left: 16),
+                        child: TextButton(
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -352,9 +406,9 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.all(16),
                             shape: const CircleBorder(),
-                            backgroundColor: Colors.white,
+                            // backgroundColor: Colors.white,
                           ),
-                          child: const Icon(Icons.account_box_rounded, color: Colors.grey),
+                          child: const Icon(Icons.account_circle_outlined, color: Color.fromARGB(255, 255, 255, 255), size: 50,),
                         ),
                       ),
                     ),
@@ -363,32 +417,32 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          ElevatedButton(
+                          TextButton(
                             onPressed: _takePhoto,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.all(16),
                               shape: const CircleBorder(),
-                              backgroundColor: Colors.green,
+                              // backgroundColor: Colors.green,
                             ),
-                            child: const Icon(Icons.camera, color: Colors.white),
+                            child: const Icon(Icons.circle_outlined, color: Colors.white, size: 80, ),
                           ),
                           Align(
                             alignment: Alignment.bottomRight,
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
-                              child: ElevatedButton(
+                        child: TextButton(
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const DashboardPage()),
+                                    MaterialPageRoute(builder: (context) => DashboardScreen()),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.all(16),
                                   shape: const CircleBorder(),
-                                  backgroundColor: Colors.blue,
+                                  // backgroundColor: Colors.blue,
                                 ),
-                                child: const Icon(Icons.dashboard_outlined, color: Colors.white),
+                                child: const Icon(Icons.dashboard_outlined, color: Colors.white, size: 50,),
                               ),
                             ),
                           ),
@@ -402,14 +456,14 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            ElevatedButton(
+                            TextButton(
                               onPressed: _pickImage,
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.all(16),
                                 shape: const CircleBorder(),
-                                backgroundColor: Colors.green,
+                                // backgroundColor: Colors.green,
                               ),
-                              child: const Icon(Icons.photo, color: Colors.white),
+                              child: const Icon(Icons.photo, color: Colors.white, size: 50,),
                             ),
                           ],
                         ),
@@ -420,7 +474,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                       alignment: Alignment.bottomLeft,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: ElevatedButton(
+                        child: TextButton(
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -430,9 +484,9 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.all(16),
                             shape: const CircleBorder(),
-                            backgroundColor: Colors.blue,
+                            // backgroundColor: Colors.blue,
                           ),
-                          child: const Icon(Icons.history, color: Colors.white),
+                          child: const Icon(Icons.history, color: Colors.white, size: 50,),
                         ),
                       ),
                     ),
@@ -501,7 +555,7 @@ class DashboardPage extends StatelessWidget {
                     MenuItemButton('History', () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => HistoryPage()),
+                        MaterialPageRoute(builder: (context) => DashboardScreen()),
                       );
                       ElevatedButton(
                       onPressed: () async {
@@ -647,7 +701,7 @@ class _HistoryPageState extends State<HistoryPage> {
               appBar: AppBar(
                 title: const Text('History Page'),
               ),
-              backgroundColor: Color.fromARGB(255, 0, 255, 0),
+              backgroundColor: Color.fromARGB(255, 107, 144, 127),
               body: Column(
                 children: [
                   Padding(
@@ -666,8 +720,13 @@ class _HistoryPageState extends State<HistoryPage> {
                     child: ListView.builder(
                       itemCount: filteredItems.length,
                       itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(filteredItems[index]),
+                        return Card(
+                          color: Color.fromRGBO(255, 255, 255, 1),
+                          child: ListTile(
+                          title: DefaultTextStyle(
+                          style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)), 
+                          child: Text(filteredItems[index]),
+                          ),
                           onTap: (){
                             Navigator.push(
                               context,
@@ -680,6 +739,7 @@ class _HistoryPageState extends State<HistoryPage> {
                               }),
                             );
                           }
+                        ),
                         );
                       },
                     ),
@@ -732,22 +792,38 @@ class AccountPage extends StatelessWidget {
             // Dacă utilizatorul este autentificat, afișează conținutul paginii AccountPage
             return Scaffold(
               appBar: AppBar(
-                title: Text('Account Page -> ' + loggedInUsername!),
+                // title: Text('Account Page -> ' + loggedInUsername!),
+                title: Text('Account Page'),
               ),
-              backgroundColor: Color.fromARGB(255, 0, 255, 0),
+              backgroundColor: Color.fromARGB(255, 107, 144, 127),
               body: Center(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    SizedBox(height: 16),
+                    Container(
+                      padding: EdgeInsets.all(8.0), // Add some padding
+                      decoration: BoxDecoration(
+                        color: Colors.white, // Set the color of the box
+                        border: Border.all(color: Colors.grey), // Add a border
+                        borderRadius: BorderRadius.circular(10.0), // Add some round corners
+                      ),
+                      child: Text(
+                        "$loggedInUsername", 
+                        style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 23)
+                      ),
+                    ),
+                    SizedBox(height: 256),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                          MaterialPageRoute(builder: (context) => UpdateAccountPage()),
                         );
                       },
-                      child: Text('Change Password'),
+                      child: Text('Update Account', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
                     ),
+                    SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.push(
@@ -755,9 +831,10 @@ class AccountPage extends StatelessWidget {
                           MaterialPageRoute(builder: (context) => DeleteAccountPage()),
                         );
                       },
-                      child: Text('Delete Account'),
+                      child: Text('Delete Account', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
                     ),
                     // Alte elemente ale paginii AccountPage pot fi adăugate aici
+                    SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () async {
                         // Logout
@@ -816,10 +893,13 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: Colors.green, // Set the background color here
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      backgroundColor: Color.fromARGB(255, 107, 144, 127),
+      body: SingleChildScrollView(
+
+          padding: const EdgeInsets.only(top:128.0, left: 16.0, right: 16.0, bottom: 16.0),
+        child: Container(
+          
+        color: const Color.fromARGB(255, 107, 144, 127), // Set the background color here
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -832,6 +912,7 @@ class LoginPage extends StatelessWidget {
                 "Username",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
+              const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
@@ -869,7 +950,7 @@ class LoginPage extends StatelessWidget {
                 decoration: const InputDecoration(labelText: 'Password'),
               ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -906,11 +987,10 @@ class LoginPage extends StatelessWidget {
                     );
                   }
                 },
-                child: const Text('Sign In'),
+                child: const Text('Sign In',  style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
               ),
               const SizedBox(height: 16),
               const Text("You don't have an account?", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
-              
               TextButton(
                 style: ElevatedButton.styleFrom(
                   shape: const RoundedRectangleBorder(
@@ -923,18 +1003,20 @@ class LoginPage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => SignupPage()),
                   );
                 },
-                child: const Text("Sign Up"),
+                child: const Text("Sign Up", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
               ),
                 const SizedBox(height: 16),
                 Text("Forgot your password?", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
+                
+              const SizedBox(height: 5),
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => RecoveryPasswordPage()),
+                    MaterialPageRoute(builder: (context) => PasswordRecoveryPage()),
                   );
                 },
-                child: const Text("Recover your password"),
+                child: const Text("Recover your password",  style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
               ),
               
             ],
@@ -959,7 +1041,7 @@ class SignupPage extends StatelessWidget {
       backgroundColor: Theme.of(context).primaryColor,
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(top:128.0, left: 16.0, right: 16.0, bottom: 16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -1129,7 +1211,7 @@ class SignupPage extends StatelessWidget {
                     );
                   }
                 },
-                child: const Text('Sign Up'),
+                child: const Text('Sign Up', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
               ),
               const SizedBox(height: 16),
               const Text("You already have an account?", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),),
@@ -1145,7 +1227,7 @@ class SignupPage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => LoginPage()),
                   );
                 },
-                child: const Text("Sign in"),
+                child: const Text("Sign in", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
               ),
               
               
@@ -1157,7 +1239,7 @@ class SignupPage extends StatelessWidget {
   }
 }
 
-class RecoveryPasswordPage extends StatelessWidget {
+class PasswordRecoveryPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
 
   void requestPasswordReset(String email) async {
@@ -1187,13 +1269,16 @@ class RecoveryPasswordPage extends StatelessWidget {
       appBar: AppBar(
                 title: const Text('Password Recovery Page'),
               ),
-      backgroundColor: Colors.green,
+      backgroundColor: Color.fromARGB(255, 107, 144, 127),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 32),
+              Text("Email Address", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
               TextField(
                 onTap: () {
                   // Handle tap outside the container
@@ -1227,23 +1312,23 @@ class RecoveryPasswordPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (context) => LoginPage()),
                     );
-                    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Check your email'),
-          content: const Text('We have sent a password reset link to your email address.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+                    // showDialog(
+                    //   context: context,
+                    //   builder: (context) {
+                    //     return AlertDialog(
+                    //       title: const Text('Check your email'),
+                    //       content: const Text('We have sent a password reset link to your email address.'),
+                    //       actions: [
+                    //         TextButton(
+                    //           onPressed: () {
+                    //             Navigator.of(context).pop();
+                    //           },
+                    //           child: const Text('OK'),
+                    //         ),
+                    //       ],
+                    //     );
+                    //   },
+                    // );
 
                   } else {
                     showDialog(
@@ -1264,9 +1349,39 @@ class RecoveryPasswordPage extends StatelessWidget {
                       },
                     );
                   }
+
+                  if(email != ""){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                    );
+                  }
+
                 },
-                child: const Text('Send Recovery Email'),
+                child: const Text(
+                  'Send Recovery Email',
+                  style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15),
+                ),
               ),
+              const SizedBox(height: 64),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                onPressed: () async {
+                
+                Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                    );
+              }, child: const Text(
+                  'Send Recovery Email',
+                  style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15),
+                )),
+              
+
             ],
           ),
         ),
@@ -1276,14 +1391,17 @@ class RecoveryPasswordPage extends StatelessWidget {
 }
 
 
-class ChangePasswordPage extends StatelessWidget {
+class UpdateAccountPage extends StatelessWidget {
   final TextEditingController newPasswordController = TextEditingController();
   final TextEditingController newPasswordController_r = TextEditingController();
   final TextEditingController newUsernameController = TextEditingController();
   final TextEditingController newEmailController = TextEditingController();
   
 
-  void updateUser(Map<String, dynamic> userDataToUpdate, String accessToken) async {
+  
+
+
+  void updateUser(BuildContext context, Map<String, dynamic> userDataToUpdate, String accessToken) async {
     final url = Uri.parse('http://10.0.2.2:8080/api/users/logged/update');
 
     final response = await http.put(
@@ -1297,8 +1415,28 @@ class ChangePasswordPage extends StatelessWidget {
 
     if (response.statusCode == 200) {
       print('User updated successfully');
+      loggedInUsername = userDataToUpdate['username'];
+      
+      print(loggedInUsername);
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       // Now you can use jsonResponse in your application
+       showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Success'),
+        content: Text('Info updated successfully'),
+        actions: <Widget>[
+            TextButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
     } else {
       print('Failed to update user. Status code: ${response.statusCode}');
 
@@ -1309,9 +1447,9 @@ class ChangePasswordPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Change Password Page'),
+        title: const Text('Update Account Page'),
       ),
-      backgroundColor: Colors.green,
+      backgroundColor: Color.fromARGB(255, 107, 144, 127),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -1319,6 +1457,8 @@ class ChangePasswordPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 32),
+              Text("New Username", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
               TextFormField(
                 obscureText: false,
                 controller: newUsernameController,
@@ -1333,6 +1473,8 @@ class ChangePasswordPage extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 32),
+              Text("New Email", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
               TextFormField(
                 obscureText: false,
                 controller: newEmailController,
@@ -1347,6 +1489,8 @@ class ChangePasswordPage extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 32),
+              Text("New Password", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
               TextFormField(
                 obscureText: true,
                 controller: newPasswordController,
@@ -1361,6 +1505,8 @@ class ChangePasswordPage extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 32),
+              Text("Repeat New Password", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
               TextFormField(
                 obscureText: true,
                 controller: newPasswordController_r,
@@ -1394,7 +1540,7 @@ class ChangePasswordPage extends StatelessWidget {
                   SharedPreferences prefs = await SharedPreferences.getInstance();
                   String? accessToken = prefs.getString('accessToken');
 
-                  updateUser(userDataToUpdate, accessToken!);
+                  updateUser(context, userDataToUpdate, accessToken!);
 
                   // TODO: Implement password change logic
 
@@ -1404,7 +1550,7 @@ class ChangePasswordPage extends StatelessWidget {
                   newUsernameController.clear();
                   newEmailController.clear();
                 },
-                child: const Text('Change Password'),
+                child: const Text('Change Password', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
               ),
             ],
           ),
@@ -1446,7 +1592,7 @@ class DeleteAccountPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Delete Account Page'),
       ),
-      backgroundColor: Colors.green,
+      backgroundColor: Color.fromARGB(255, 107, 144, 127),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -1478,7 +1624,7 @@ class DeleteAccountPage extends StatelessWidget {
                   // Clear the text fields
                   // currentPasswordController.clear();
                 },
-                child: const Text('Delete account'),
+                child: const Text('Delete account', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
               ),
             ],
           ),
@@ -1502,55 +1648,70 @@ class BugPage extends StatelessWidget {
     var insecticide = data["insecticide"];
     var prevention = data["prevention_methods"];
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 107, 144, 127),
       appBar: AppBar(title: const Text('Bug Details')),
       body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(height: 20),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
+                color: Color.fromRGBO(255, 255, 255, 1),
+                border: Border.all(color: const Color.fromARGB(255, 255, 255, 255)),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: Text('Bug Name: $name'),
+              child: Text('Bug Name: $name',
+                          style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0))),
             ),
             SizedBox(height: 20),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
+                color: Color.fromRGBO(255, 255, 255, 1),
+                border: Border.all(color: const Color.fromARGB(255, 255, 255, 255)),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: Text('Bug Description: $description'),
+              child: Text('Bug Description: $description',
+                          style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0))),
             ),
             SizedBox(height: 20),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
+                color: Color.fromRGBO(255, 255, 255, 1),
+                border: Border.all(color: Color.fromARGB(255, 255, 255, 255)),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: Text('Plants affected: $plants'),
+              child: Text('Plants affected: $plants',
+                          style: TextStyle(color: Color.fromARGB(255, 0, 0, 0))),
             ),
             SizedBox(height: 20),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
+                color: Color.fromRGBO(255, 255, 255, 1),
+                border: Border.all(color: const Color.fromARGB(255, 255, 255, 255)),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: Text('Insecticide: $insecticide'),
+              child: Text('Insecticide: $insecticide',
+                          style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0))),
             ),
             SizedBox(height: 20),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
+                color: Color.fromRGBO(255, 255, 255, 1),
+                border: Border.all(color: const Color.fromARGB(255, 255, 255, 255)),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: Text('Prevention: $prevention'),
+              child: Text('Prevention: $prevention',
+                          style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0))),
             ),
             SizedBox(height: 20),
             ElevatedButton(
@@ -1561,46 +1722,275 @@ class BugPage extends StatelessWidget {
             ),
           ],
         ),
+        ),
+      ),
       ),
     );
   }
 }
 
-// Page for resetting the password
-class ResetPasswordPage extends StatelessWidget {
-  final String authenticationToken;
-  final String userId;
 
-  const ResetPasswordPage({
-    required this.authenticationToken,
-    required this.userId,
-    Key? key,
-  }) : super(key: key);
+
+class DashboardScreen extends StatefulWidget {
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  String plotUrl = 'http://10.0.2.2:8080/api/dashboard/getPlot';
+  String plotUrl2 = 'http://10.0.2.2:8080/api/dashboard/getPlot2';
+
+  final TransformationController _controller = TransformationController();
+
+  @override
+  void dispose() {
+    _controller.removeListener(_maintainMinScale);
+    super.dispose();
+  }
+
+  void _maintainMinScale() {
+    final scale = _controller.value.getMaxScaleOnAxis();
+    if (scale < 0.1) {
+      final correctedMatrix = Matrix4.identity()..scale(0.1);
+      _controller.value = correctedMatrix;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Password')),
-      body: Center(
+      appBar: AppBar(
+        title: Text('Dashboard'),
+      ),
+      body: InteractiveViewer(
+        minScale: 0.1, // You can adjust this as needed
+        maxScale: 5, // You can adjust this as needed
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Reset Password Page'),
-            const SizedBox(height: 20),
-            Text('Authentication Token: $authenticationToken'),
-            Text('User ID: $userId'),
-            const SizedBox(height: 20),
-            // Textfield new password
-            
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Implement password reset logic
-              },
-              child: const Text('Reset Password'),
+            Expanded(
+              child: Image.network(plotUrl),
+            ),
+            Expanded(
+              child: Image.network(plotUrl2),
             ),
           ],
         ),
       ),
+    );
+  }
+
+
+   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_maintainMinScale);
+    _fetchPlots();
+  }
+
+
+  Future<void> _fetchPlots() async {
+    final response1 = await http.get(Uri.parse(plotUrl));
+    final response2 = await http.get(Uri.parse(plotUrl2));
+
+    if (response1.statusCode == 200 && response2.statusCode == 200) {
+      setState(() {});
+    } else {
+      throw Exception('Failed to load plots');
+    }
+  }
+}
+
+class ChangePasswordPage extends StatelessWidget {
+  final TextEditingController codeController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
+  final TextEditingController repeatPasswordController = TextEditingController();
+
+  
+  Map<String, String> parseQueryParameters(String text) {
+    final uri = Uri.parse('?' + text);
+    return uri.queryParameters;
+  }
+
+  void showAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text('Passwords do not match'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Future<void> resetPassword(BuildContext context, userId, String token, String password) async {
+    final url = Uri.parse('http://10.0.2.2:8080/api/users/resetPassword');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userId': userId,
+        'token': token,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Password reset successfully');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Success'),
+            content: Text('Password reset successfully'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+      
+    } else {
+      print('Failed to reset password');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Success'),
+            content: Text('Password reset successfully'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color.fromARGB(255, 107, 144, 127),
+      appBar: AppBar(title: const Text('Change Password')),
+      body: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                
+                const SizedBox(height: 20),
+                const Text('Use the code provided in the email to change the password', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+                const SizedBox(height: 20),
+                
+              const SizedBox(height: 32),
+              Text("CODE", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
+                TextField(
+                  onTap: () {
+                  // Handle tap outside the container
+                  FocusScope.of(context).unfocus(); // Hide the keyboard
+                  },
+                  controller: codeController,
+                  decoration: InputDecoration(
+                    labelText: 'CODE',
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15),
+                    fillColor: const Color.fromARGB(255, 255, 255, 255), // Change background color
+                    filled: true,
+                    border: OutlineInputBorder(), // Add this line
+                  ),
+                ),
+              const SizedBox(height: 32),
+              Text("New Password", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
+                TextField(
+                  onTap: () {
+                  // Handle tap outside the container
+                  FocusScope.of(context).unfocus(); // Hide the keyboard
+                  },
+                  controller: newPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'New Password',
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15),
+                    fillColor: const Color.fromARGB(255, 255, 255, 255), // Change background color
+                    filled: true,
+                    border: OutlineInputBorder(), // Add this line
+                  ),
+                ),
+              const SizedBox(height: 32),
+              Text("Repeat New Password", style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 25)),
+              const SizedBox(height: 10),
+                TextField(
+                  onTap: () {
+                  // Handle tap outside the container
+                  FocusScope.of(context).unfocus(); // Hide the keyboard
+                  },
+                  controller: repeatPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Repeat New Password',
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15),
+                    fillColor: const Color.fromARGB(255, 255, 255, 255), // Change background color
+                    filled: true,
+                    border: OutlineInputBorder(), // Add this line
+                  ),
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                  onPressed: () {
+                    final parameters = parseQueryParameters(codeController.text);
+                    final token = parameters['token'];
+                    final id = parameters['id'];
+                    print("aaaaaaaaaaaaaaaaaa");
+                    print(token);
+                    print(id);
+
+                    if (newPasswordController.text == repeatPasswordController.text)
+                      if (token != null && id != null) 
+                        {
+                          resetPassword(context, id, token, newPasswordController.text);
+                        } 
+                        else {
+                          // allert password do not match
+                          showAlert(context);
+                        }
+                  },
+                  child: const Text('Change Password', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        ),
     );
   }
 }
