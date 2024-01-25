@@ -33,16 +33,16 @@ def inference(file_path,file,token,y_true):
         files = {'photo': (file, f, 'image/jpeg')}
         response = requests.post(url,headers=headers, files=files)
     if response.status_code == 200:
-        print("File uploaded successfully")
-        print(str(int(response.text[-3:-2])-1),file,y_true,sep=' ')
-        return int(response.text[-3:-2])-1
+        content = json.loads(response.text)
+        print(str(content['data']['number']-1),file,y_true,sep=' ')
+        return int(content['data']['number'])-1
     else:
         print(f"Failed to upload file. Status code: {response.status_code}, Response text: {response.text}")
 
 
 def refresh_token(start_time,acces_token):
     if time.time() - start_time > 3500:
-        print('token expirat')
+        print('token expired')
         acces_token = login()
         start_time = time.time()
         return acces_token,start_time
