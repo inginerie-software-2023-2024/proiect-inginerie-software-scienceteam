@@ -40,6 +40,10 @@ These tests check the functionality and workflow of the app on a UI side.
 There are also tests checking if the front-end and back-end are integrated properly and work together.
 The tests are made in such way as to check the functionality and limits of the app while ensuring that the database will not be affected.
 
+![tests_deschis](https://github.com/inginerie-software-2023-2024/proiect-inginerie-software-scienceteam/assets/93475691/a8d4f71c-b780-4327-8675-88861af964f5)
+![tests_inchis](https://github.com/inginerie-software-2023-2024/proiect-inginerie-software-scienceteam/assets/93475691/ada7e23c-4cb2-4145-bc03-4b24d688468f)
+
+
 
 7. Libraries used
 
