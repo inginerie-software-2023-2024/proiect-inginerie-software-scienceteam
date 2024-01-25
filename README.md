@@ -49,21 +49,34 @@ The tests are made in such way as to check the functionality and limits of the a
 
 For Flutter the libraries that were used are:
   flutter:
+    
     sdk: flutter
+    
     image_picker: ^1.0.7
+    
     realm: 1.6.1
+    
     shared_preferences: ^2.0.12
+    
     mongo_dart: 0.10.0
+    
     http: ^1.2.0
+    
     url_launcher: ^6.0.10
+    
     uni_links: ^0.5.0
+    
     go_router: ^12.1.1
+    
     cupertino_icons: ^1.0.2
+    
     web_socket_channel: ^2.4.0
+    
     mockito: ^5.4.4
 
 and
   flutter_test:
+    
     sdk: flutter
 
 
