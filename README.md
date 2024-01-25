@@ -23,6 +23,7 @@ Here are links for the required resources and additional instructions:
 - AndroidStudio https://developer.android.com/studio
 - Set up the emulator + SDK https://www.youtube.com/watch?v=ly0hAtV7EBg
 - Add photos to the emulator https://www.youtube.com/shorts/QL9i27xKqdc
+- Git https://git-scm.com/
 
 4. Most valuable output.
 
