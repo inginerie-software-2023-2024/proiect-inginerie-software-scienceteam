@@ -14,8 +14,11 @@ To use the emulator you will have to create one in AndroidStudio.
 Depending of the type of processor that you use, you will have to change the setting accordingly.
 
 The flutter app can be created from the VSCode commands, but as the project is already finished, only running it will be required.
+You must use VSCode to open the folder PROIECT_2 where the app is.
 You will have to select the emulated phone from the bottom right corner instead of the current operating system that VSCode will try to use to run the app.
 Then you can use the run button at the top right corner of the screen.
+
+If the application has errors from libraries open a command prompt and type "flutter pub get" which installs the required libraries found in the file pubspec.yaml
 
 Here are links for the required resources and additional instructions:
 - Flutter download + tutorial for setup https://docs.flutter.dev/get-started/install
@@ -23,6 +26,7 @@ Here are links for the required resources and additional instructions:
 - AndroidStudio https://developer.android.com/studio
 - Set up the emulator + SDK https://www.youtube.com/watch?v=ly0hAtV7EBg
 - Add photos to the emulator https://www.youtube.com/shorts/QL9i27xKqdc
+- Git https://git-scm.com/
 
 4. Most valuable output.
 
