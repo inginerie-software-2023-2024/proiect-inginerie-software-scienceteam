@@ -12,6 +12,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "bindings": "^1.5.0",
+    "chartjs-node-canvas": "^4.1.6",
     "cmake-js": "^7.2.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
