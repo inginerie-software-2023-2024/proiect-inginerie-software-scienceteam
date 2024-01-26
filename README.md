@@ -90,7 +90,7 @@ Here are links for the required resources and additional instructions:
 
 ### Most valuable output
 
-The most valuable output of our application is the detection and classification of an insect from the image provided by the user.
+The most valuable output of our application is the classification of an insect from the image provided by the user.
 
 
 ## Deployment plan
@@ -176,3 +176,12 @@ and
     }
 
 
+### For Machine Learning Pipeline the libraries that were used are:
+
+    torch==2.1.0
+    torchvision==0.15.2a0
+    opencv-python==4.6.0
+    albumentations==1.3.1
+    Pillow==9.4.0
+    numpy==1.26.0
+    torcheval==0.0.7
