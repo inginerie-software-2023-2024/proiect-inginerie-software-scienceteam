@@ -84,8 +84,8 @@ Here are links for the required resources and additional instructions:
 
 ### User journey
 
+![User_Journey_Map](https://github.com/inginerie-software-2023-2024/proiect-inginerie-software-scienceteam/assets/100355126/0eef20de-aa62-483e-a90e-54d32f91a001)
 
-![Alt text](User_Journey_Map.png)
 
 
 ### Most valuable output
