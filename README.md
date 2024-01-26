@@ -1,3 +1,53 @@
+
+# BugScan - The app that identifies insects
+
+## Purpose of the project
+
+Our project is a mobile application that can identify bugs from a photo taken or uploaded by the user. The app will also provide information about the bug and how to deal with it, the history of the bugs identified by the user and a dashboard with statistics. 
+
+This project can benefit from future improvements, such as:
+- adding more bugs to the database
+- adding more information about the bugs
+- increasing the accuracy of the machine learning model
+- deploying the app 
+
+
+## Guides on how to use the app locally
+
+### Prerequisites
+First of all, you will have to clone the project from this repository. 
+
+You will need to have installed the following:
+- Visual Studio Code
+- Android Studio
+- Git lfs
+- Node: 18.18.2
+- Npm: 9.8.1
+- Python : 3.11.5
+- Pip: 23.3.1.
+
+For the app to work, you will have to do the following steps:
+- Open a terminal in machine_learning directory, and run the following command: 
+
+    `pip install -r requirements.txt`
+
+    `git lfs install`
+
+    `git lfs pull`
+
+- Open a terminal in server directory, and run the following command: 
+
+    `npm install`
+
+    `npm install -g nodemon`
+
+### Running the app
+- In a terminal in server directory, run: 
+
+    `npm start` for starting the server
+
+
+
 2. Instructions on running the Flutter app and android emulator.
 
 The programs required for these tasks are: VSCode and AndroidStudio
@@ -28,15 +78,27 @@ Here are links for the required resources and additional instructions:
 - Add photos to the emulator https://www.youtube.com/shorts/QL9i27xKqdc
 - Git https://git-scm.com/
 
-4. Most valuable output.
+
+
+## High level diagrams of the architecture 
+
+### User journey
+
+![User_Journey_Map](https://github.com/inginerie-software-2023-2024/proiect-inginerie-software-scienceteam/assets/100355126/0eef20de-aa62-483e-a90e-54d32f91a001)
+
+
+
+### Most valuable output
 
 The most valuable output of our application is the detection and classification of an insect from the image provided by the user.
 
-5. Deployment:
 
-The app can be deployed, but as this would require expensive investments in both AI - training and database management we chose to present the beta version of the app.
+## Deployment plan
 
-6. Test descriptions.
+As for now, the app is not deployed on any platform. This will be done as a future improvement.
+
+
+## Description of the QA process
 
 We have run many tests on the app, covering each functional aspect.
 On the front-end of the app, unit tests have been run.
@@ -49,9 +111,10 @@ The tests are made in such way as to check the functionality and limits of the a
 
 
 
-7. Libraries used
+## External dependencies included in the project
 
-For Flutter the libraries that were used are:
+### For Flutter the libraries that were used are:
+
   flutter:
     
     sdk: flutter
@@ -84,5 +147,32 @@ and
     sdk: flutter
 
 
+### For Node.js the libraries that were used are:
+  
+    "dependencies": {
+      "bcrypt": "^5.1.1",
+      "bindings": "^1.5.0",
+      "chartjs-node-canvas": "^4.1.6",
+      "cmake-js": "^7.2.1",
+      "dotenv": "^16.3.1",
+      "express": "^4.18.2",
+      "get-pixels": "^3.3.3",
+      "handlebars": "^4.7.8",
+      "joi": "^17.11.0",
+      "jsonwebtoken": "^9.0.2",
+      "libtorchjs": "^1.0.0-alpha.4",
+      "mongoose": "^8.0.3",
+      "multer": "^1.4.5-lts.1",
+      "nan": "^2.18.0",
+      "nodemailer": "^6.9.8",
+      "onnxjs": "^0.1.8",
+      "onnxruntime-node": "^1.16.3",
+      "pngjs": "^7.0.0",
+      "sharp": "^0.33.2",
+      "torch-js": "npm:@arition/torch-js@^0.14.0"
+    },
+    "devDependencies": {
+      "nodemon": "^3.0.2"
+    }
 
 
