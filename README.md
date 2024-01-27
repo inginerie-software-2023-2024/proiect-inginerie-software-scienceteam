@@ -50,6 +50,7 @@ For the app to work, you will have to do the following steps:
 
 
 
+
 - Instructions on running the Flutter app and android emulator.
 
 
