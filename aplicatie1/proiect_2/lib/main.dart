@@ -1742,6 +1742,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final TransformationController _controller = TransformationController();
 
+  Future<void> _fetchPlots() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var accessToken = prefs.getString('accessToken');
+
+    final response1 = await http.get(
+      Uri.parse(plotUrl),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    final response2 = await http.get(
+      Uri.parse(plotUrl2),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response1.statusCode == 200 && response2.statusCode == 200) {
+      setState(() {});
+    } else {
+      throw Exception('Failed to load plots');
+    }
+  }
+
   @override
   void dispose() {
     _controller.removeListener(_maintainMinScale);
@@ -1788,16 +1813,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
 
-  Future<void> _fetchPlots() async {
-    final response1 = await http.get(Uri.parse(plotUrl));
-    final response2 = await http.get(Uri.parse(plotUrl2));
+  // Future<void> _fetchPlots() async {
+  //   final response1 = await http.get(Uri.parse(plotUrl));
+  //   final response2 = await http.get(Uri.parse(plotUrl2));
 
-    if (response1.statusCode == 200 && response2.statusCode == 200) {
-      setState(() {});
-    } else {
-      throw Exception('Failed to load plots');
-    }
-  }
+  //   if (response1.statusCode == 200 && response2.statusCode == 200) {
+  //     setState(() {});
+  //   } else {
+  //     throw Exception('Failed to load plots');
+  //   }
+  // }
 }
 
 class ChangePasswordPage extends StatelessWidget {
