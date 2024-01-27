@@ -19,7 +19,7 @@ First of all, you will have to clone the project from this repository.
 
 You will need to have installed the following:
 - Visual Studio Code
-- Android Studio
+- Android Studio Hedgehog | 2023.1.1 Patch 1
 - Git lfs
 - Node: 18.18.2
 - Npm: 9.8.1
