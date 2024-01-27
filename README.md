@@ -50,38 +50,21 @@ For the app to work, you will have to do the following steps:
 
 
 
-2. Instructions on running the Flutter app and android emulator.
+- Instructions on running the Flutter app and android emulator.
 
-The programs required for these tasks are: VSCode and AndroidStudio
-
-VSCode will be used for developing and running the application.
-AndroidStudio will be used for emulating the phone.
-
-VSCode will run the application and so it will require the apropriate extensions: Dart and Flutter.
-These two extensions will make running the dart code possible.
-
-Also you will need the FlutterMaster installed in your computer.
 
 To use the emulator you will have to create one in AndroidStudio.
 Depending of the type of processor that you use, you will have to change the setting accordingly.
 
--The flutter app can be created from the VSCode commands, but as the project is already finished, only running it will be required.
-
 -You must use VSCode to open the folder PROIECT_2 where the app is.
+
+-To install all the required libraries type "flutter pub get". The list of required libraries is located in the same folder in the file pubspec.yaml.
 
 -You will have to select the emulated phone from the bottom right corner instead of the current operating system that VSCode will try to use to run the app.
 
 -Then you can use the run button at the top right corner of the screen.
 
-<b>If the application has errors from libraries open a command prompt and type "flutter pub get" which installs the required libraries found in the file pubspec.yaml</b>
-
-Here are links for the required resources and additional instructions:
-- Flutter download + tutorial for setup https://docs.flutter.dev/get-started/install
-- VSCode install https://code.visualstudio.com/
-- AndroidStudio https://developer.android.com/studio
-- Set up the emulator + SDK https://www.youtube.com/watch?v=ly0hAtV7EBg
-- Add photos to the emulator https://www.youtube.com/shorts/QL9i27xKqdc
-- Git https://git-scm.com/
+<b>If the application has errors from libraries open a command prompt and type "flutter clean" and then "flutter pub get" which reinstalls the required libraries found in the file pubspec.yaml</b>
 
 
 
