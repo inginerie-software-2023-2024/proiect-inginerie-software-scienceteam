@@ -25,6 +25,8 @@ You will need to have installed the following:
 - Npm: 9.8.1
 - Python : 3.11.5
 - Pip: 23.3.1.
+- Flutter
+- Dart
 
 For the app to work, you will have to do the following steps:
 - Open a terminal in machine_learning directory, and run the following command: 
@@ -63,10 +65,13 @@ Also you will need the FlutterMaster installed in your computer.
 To use the emulator you will have to create one in AndroidStudio.
 Depending of the type of processor that you use, you will have to change the setting accordingly.
 
-The flutter app can be created from the VSCode commands, but as the project is already finished, only running it will be required.
-You must use VSCode to open the folder PROIECT_2 where the app is.
-You will have to select the emulated phone from the bottom right corner instead of the current operating system that VSCode will try to use to run the app.
-Then you can use the run button at the top right corner of the screen.
+-The flutter app can be created from the VSCode commands, but as the project is already finished, only running it will be required.
+
+-You must use VSCode to open the folder PROIECT_2 where the app is.
+
+-You will have to select the emulated phone from the bottom right corner instead of the current operating system that VSCode will try to use to run the app.
+
+-Then you can use the run button at the top right corner of the screen.
 
 If the application has errors from libraries open a command prompt and type "flutter pub get" which installs the required libraries found in the file pubspec.yaml
 
