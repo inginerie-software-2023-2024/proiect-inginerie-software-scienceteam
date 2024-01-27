@@ -73,7 +73,7 @@ Depending of the type of processor that you use, you will have to change the set
 
 -Then you can use the run button at the top right corner of the screen.
 
-<b>If the application has errors from libraries open a command prompt and type <u>"flutter pub get"</u> which installs the required libraries found in the file pubspec.yaml</b>
+<b>If the application has errors from libraries open a command prompt and type "flutter pub get" which installs the required libraries found in the file pubspec.yaml</b>
 
 Here are links for the required resources and additional instructions:
 - Flutter download + tutorial for setup https://docs.flutter.dev/get-started/install
