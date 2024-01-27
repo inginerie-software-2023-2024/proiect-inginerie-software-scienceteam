@@ -25,8 +25,8 @@ You will need to have installed the following:
 - Npm: 9.8.1
 - Python : 3.11.5
 - Pip: 23.3.1.
-- Flutter
-- Dart
+- Flutter 3.80.0
+- Dart 3.80.0
 
 For the app to work, you will have to do the following steps:
 - Open a terminal in machine_learning directory, and run the following command: 
