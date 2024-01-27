@@ -61,7 +61,7 @@ For the app to work, you will have to do the following steps:
 - To use the emulator you will have to create one in AndroidStudio.
 - Depending of the type of processor that you use, you will have to change the setting accordingly.
 
-- You must use VSCode to open the folder PROIECT_2 where the app is.
+- You must use VSCode to open the folder aplicatie1/proiect_2 where the app is.
 
 - You will have to select the emulated phone from the bottom right corner instead of the current operating system that VSCode will try to use to run the app.
 
