@@ -43,7 +43,8 @@ For the app to work, you will have to do the following steps:
 
     `npm install -g nodemon`
 
-- Open a terminal in the app directory, and run the following command:
+- Open a terminal in the aplicatie directory, and run the following command:
+  
     `flutter pub get`
 
 
@@ -55,11 +56,10 @@ For the app to work, you will have to do the following steps:
 
 
 
-- Instructions on running the Flutter app and android emulator.
 
 
-To use the emulator you will have to create one in AndroidStudio.
-Depending of the type of processor that you use, you will have to change the setting accordingly.
+- To use the emulator you will have to create one in AndroidStudio.
+- Depending of the type of processor that you use, you will have to change the setting accordingly.
 
 - You must use VSCode to open the folder PROIECT_2 where the app is.
 
