@@ -43,6 +43,10 @@ For the app to work, you will have to do the following steps:
 
     `npm install -g nodemon`
 
+- Open a terminal in the app directory, and run the following command:
+    `flutter pub get`
+
+
 ### Running the app
 - In a terminal in server directory, run: 
 
@@ -57,15 +61,13 @@ For the app to work, you will have to do the following steps:
 To use the emulator you will have to create one in AndroidStudio.
 Depending of the type of processor that you use, you will have to change the setting accordingly.
 
--You must use VSCode to open the folder PROIECT_2 where the app is.
+- You must use VSCode to open the folder PROIECT_2 where the app is.
 
--To install all the required libraries type `flutter pub get`. The list of required libraries is located in the same folder in the file pubspec.yaml.
+- You will have to select the emulated phone from the bottom right corner instead of the current operating system that VSCode will try to use to run the app.
 
--You will have to select the emulated phone from the `bottom right corner` instead of the current operating system that VSCode will try to use to run the app.
+- Then you can use the run button at the top right corner of the screen.
 
--Then you can use the `run button` at the top right corner of the screen.
-
-<b>If the application has errors from libraries open a command prompt and type `flutter clean` and then `flutter pub get` which reinstalls the required libraries found in the file pubspec.yaml</b>
+- If the application has errors from libraries open a command prompt and type `flutter clean` and then `flutter pub get` which reinstalls the required libraries found in the file pubspec.yaml
 
 
 
