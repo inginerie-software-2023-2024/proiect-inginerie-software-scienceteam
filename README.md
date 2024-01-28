@@ -92,23 +92,32 @@ Citation for the dataset:
 For our app, we have the following data inputs:
 - for account creation and information update:
   
-      ~ User-provided information during the account creation process.
-      ~ User updates for account information, such as updating personal details.
+  ~ User-provided information during the account creation process.
+  
+  ~ User updates for account information, such as updating personal details.
+  
 - for insect photo capture or upload:
   
-      ~ Images captured using the device's camera feature to photograph insects.
-      ~ Alternatively, users can upload existing photos from their device's gallery.
+   ~ Images captured using the device's camera feature to photograph insects.
+  
+   ~ Alternatively, users can upload existing photos from their device's gallery.
+
 - for insect classification:
   
-      ~ Captured or uploaded images of insects used as input for the classification algorithm.
+   ~ Captured or uploaded images of insects used as input for the classification algorithm.
+
 - for viewing insect history:
-  
-      ~ Retrieval of historical data from the database related to previously classified insects.
-      ~ User interactions, such as selecting a specific insect from the history to view detailed information.
+
+   ~ Retrieval of historical data from the database related to previously classified insects.
+
+   ~ User interactions, such as selecting a specific insect from the history to view detailed information.
+
 - for recovering the forgotten password:
-  
-      ~ User's email, provided in the form.
-      ~ Upon receiving the reset password email, the code for accesing the reset password functionality, and the new password.
+
+   ~ User's email, provided in the form.
+
+   ~ Upon receiving the reset password email, the code for accesing the reset password functionality, and the new password.
+
 
 ### Configuration files
 
