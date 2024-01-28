@@ -1550,7 +1550,7 @@ class UpdateAccountPage extends StatelessWidget {
                   newUsernameController.clear();
                   newEmailController.clear();
                 },
-                child: const Text('Change Password', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
+                child: const Text('Change Info', style: TextStyle(color: Color.fromARGB(255, 40, 71, 66), fontSize: 15)),
               ),
             ],
           ),
@@ -1741,6 +1741,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String plotUrl2 = 'http://10.0.2.2:8080/api/dashboard/getPlot2';
 
   final TransformationController _controller = TransformationController();
+
+  // Future<void> _fetchPlots() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   var accessToken = prefs.getString('accessToken');
+  //   print(accessToken);
+
+  //   final response1 = await http.get(
+  //     Uri.parse(plotUrl),
+  //     headers: {
+  //       'Authorization': 'Bearer $accessToken',
+  //     },
+  //   );
+  //   print(response1.statusCode);
+
+  //   final response2 = await http.get(
+  //     Uri.parse(plotUrl2),
+  //     headers: {
+  //       'Authorization': 'Bearer $accessToken',
+  //     },
+  //   );
+  //   print(" ");
+  //   print(response2.statusCode);
+
+  //   if (response1.statusCode == 200 && response2.statusCode == 200) {
+  //     setState(() {});
+  //   } else {
+  //     throw Exception('Failed to load plots');
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -1994,4 +2023,3 @@ class ChangePasswordPage extends StatelessWidget {
     );
   }
 }
-
