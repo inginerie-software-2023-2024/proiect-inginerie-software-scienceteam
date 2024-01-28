@@ -158,6 +158,10 @@ The tests are made in such way as to check the functionality and limits of the a
 ![tests_inchis](https://github.com/inginerie-software-2023-2024/proiect-inginerie-software-scienceteam/assets/93475691/ada7e23c-4cb2-4145-bc03-4b24d688468f)
 
 
+On the machine learning side of the app, we developed the test that is found in the machine_learning directory, named [integration_test.py](machine_learning/integration_test.py).
+This test check the integration between back-end and machine learning model. It ensures that accuracy remains consistent between the training phase and the integration test during inference.
+
+
 
 ## External dependencies included in the project
 
