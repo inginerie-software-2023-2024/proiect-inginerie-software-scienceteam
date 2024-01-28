@@ -2,17 +2,17 @@
 # BugScan - The app that identifies insects
 
 This is the documentation of the BugScan app. Within this documentation, you will find:
-- [Purpose of the project](#sec1)
-- [Guides on how to use the app locally](#sec2)
-- [Application entry points](#sec3)
-- [High level diagrams of the architecture](#sec4)
-- [Deployment plan](#sec5)
-- [Description of the QA process](#sec6)
-- [External dependencies included in the project](#sec7)
+- [Purpose of the project](#purpose-of-the-project)
+- [Guides on how to use the app locally](#guides-on-how-to-use-the-app-locally)
+- [Application entry points](#application-entry-points)
+- [High level diagrams of the architecture](#high-level-diagrams-of-the-architecture)
+- [Deployment plan](#deployment-plan)
+- [Description of the QA process](#description-of-the-QA-process)
+- [External dependencies included in the project](#external-dependencies-included-in-the-project)
 
 
 
-## Purpose of the project {#sec1}
+## Purpose of the project 
 
 Our project is a mobile application that can identify bugs from a photo taken or uploaded by the user. The app will also provide information about the bug and how to deal with it, the history of the bugs identified by the user and a dashboard with statistics. 
 
@@ -23,7 +23,7 @@ This project can benefit from future improvements, such as:
 - deploying the app 
 
 
-## Guides on how to use the app locally {#sec2}
+## Guides on how to use the app locally 
 
 ### Prerequisites
 First of all, you will have to clone the project from this repository. 
@@ -81,7 +81,7 @@ For the app to work, you will have to do the following steps:
 - If the application has errors from libraries open a command prompt and type `flutter clean` and then `flutter pub get` which reinstalls the required libraries found in the file pubspec.yaml
 
 
-## Application entry points {#sec3}
+## Application entry points 
 
 ### Data sources
 We have securely stored our data in MongoDB Atlas, a sophisticated cloud-based database management service designed for MongoDB. This ensures robust and efficient data management for our project.
@@ -139,7 +139,7 @@ The configuration files are found in:
 
   
 
-## High level diagrams of the architecture {#sec4}
+## High level diagrams of the architecture 
 
 ### User journey
 
@@ -152,12 +152,12 @@ The configuration files are found in:
 The most valuable output of our application is the classification of an insect from the image provided by the user.
 
 
-## Deployment plan {#sec5}
+## Deployment plan 
 
 As for now, the app is not deployed on any platform. This will be done as a future improvement.
 
 
-## Description of the QA process {#sec6}
+## Description of the QA process 
 
 We have run many tests on the app, covering each functional aspect.
 On the front-end of the app, unit tests have been run.
@@ -174,7 +174,7 @@ This test check the integration between back-end and machine learning model. It 
 
 
 
-## External dependencies included in the project {#sec7}
+## External dependencies included in the project 
 
 ### For Flutter the libraries that were used are:
 
