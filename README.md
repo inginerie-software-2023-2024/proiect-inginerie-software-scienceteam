@@ -29,7 +29,7 @@ You will need to have installed the following:
 - Dart 3.80.0
 
 For the app to work, you will have to do the following steps:
-- Open a terminal in machine_learning directory, and run the following command: 
+- Open a terminal in the machine_learning directory, and run the following command: 
 
     `pip install -r requirements.txt`
 
@@ -37,7 +37,7 @@ For the app to work, you will have to do the following steps:
 
     `git lfs pull`
 
-- Open a terminal in server directory, and run the following command: 
+- Open a terminal in the server directory, and run the following command: 
 
     `npm install`
 
@@ -70,6 +70,49 @@ For the app to work, you will have to do the following steps:
 - If the application has errors from libraries open a command prompt and type `flutter clean` and then `flutter pub get` which reinstalls the required libraries found in the file pubspec.yaml
 
 
+## Application entry points
+
+### Data sources
+We have securely stored our data in MongoDB Atlas, a sophisticated cloud-based database management service designed for MongoDB. This ensures robust and efficient data management for our project.
+
+In the development of this project, we have leveraged the utility of the IP102 dataset, an extensive dataset designed for insect pest recognition. This dataset was introduced in the paper ['IP102: A Large-Scale Benchmark Dataset for Insect Pest Recognition'](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wu_IP102_A_Large-Scale_Benchmark_Dataset_for_Insect_Pest_Recognition_CVPR_2019_paper.pdf). 
+
+Citation for the dataset:
+
+@inproceedings{Wu2019Insect,
+  title={IP102: A Large-Scale Benchmark Dataset for Insect Pest Recognition},
+  author={Xiaoping Wu and Chi Zhan and Yukun Lai and Ming-Ming Cheng and Jufeng Yang},
+  booktitle={IEEE CVPR},
+  pages={8787--8796},
+  year={2019},
+}
+
+### Data inputs
+
+For our app, we have the following data inputs:
+- for account creation and information update:
+      ~ User-provided information during the account creation process.
+      ~ User updates for account information, such as updating personal details.
+- for insect photo capture or upload:
+      ~ Images captured using the device's camera feature to photograph insects.
+      ~ Alternatively, users can upload existing photos from their device's gallery.
+- for insect classification:
+      ~ Captured or uploaded images of insects used as input for the classification algorithm.
+- for viewing insect history:
+      ~ Retrieval of historical data from the database related to previously classified insects.
+      ~ User interactions, such as selecting a specific insect from the history to view detailed information.
+- for recovering the forgotten password:
+      ~ User's email, provided in the form.
+      ~ Upon receiving the reset password email, the code for accesing the reset password functionality, and the new password.
+
+### Configuration files
+
+The configuration files are found in:
+- the machine_learning directory, the requirements.txt file.
+- the server directory, the package.json file.
+- the aplicatie directory, the pubspec.yaml file.
+
+  
 
 ## High level diagrams of the architecture 
 
